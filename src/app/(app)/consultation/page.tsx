@@ -439,6 +439,9 @@ export default function ConsultationPage() {
         reportContent += "Jangan bagikan password kepada pihak yang tidak berwenang.\n\n";
       }
 
+      console.log('Report generated, length:', reportContent.length);
+      console.log('Report preview:', reportContent.substring(0, 500) + '...');
+
       setReport(reportContent);
       toast({
         title: "Laporan Dibuat",
@@ -496,9 +499,25 @@ export default function ConsultationPage() {
   };
 
   const printPDF = async () => {
-    if (!report) return;
+    if (!report) {
+      console.error('Report is empty');
+      toast({
+        title: "Error",
+        description: "Laporan kosong. Silakan generate laporan terlebih dahulu.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
+      console.log('Report content length:', report.length);
+      console.log('Is password protected:', isPasswordProtected);
+      console.log('Password form values:', passwordForm.getValues());
+      
+      // Get password if protected
+      const password = isPasswordProtected ? passwordForm.getValues().password : '';
+      console.log('Password:', password);
+      
       // Create HTML content for PDF
       const htmlContent = `
         <!DOCTYPE html>
@@ -542,12 +561,14 @@ export default function ConsultationPage() {
               border-radius: 4px;
               font-size: 11px;
               font-weight: bold;
+              color: #0c5460;
             }
             .content {
               white-space: pre-wrap;
               font-family: 'Courier New', monospace;
               font-size: 10px;
               line-height: 1.3;
+              margin-top: 20px;
             }
             .footer {
               margin-top: 30px;
@@ -576,9 +597,9 @@ export default function ConsultationPage() {
             Hanya boleh dibuka oleh tenaga medis yang berwenang.
           </div>
           
-          ${isPasswordProtected ? `
+          ${isPasswordProtected && password ? `
           <div class="password">
-            🔒 Password untuk membuka PDF: ${passwordForm.getValues().password}
+            🔒 Password untuk membuka PDF: ${password}
           </div>
           ` : ''}
           
@@ -595,12 +616,18 @@ export default function ConsultationPage() {
         </html>
       `;
       
+      console.log('HTML content created, length:', htmlContent.length);
+      
       // Create temporary element
       const element = document.createElement('div');
       element.innerHTML = htmlContent;
       element.style.position = 'absolute';
       element.style.left = '-9999px';
+      element.style.top = '-9999px';
+      element.style.width = '800px';
       document.body.appendChild(element);
+      
+      console.log('Element created and added to DOM');
       
       // Configure html2pdf options
       const opt = {
@@ -610,7 +637,8 @@ export default function ConsultationPage() {
         html2canvas: { 
           scale: 2,
           useCORS: true,
-          letterRendering: true
+          letterRendering: true,
+          allowTaint: true
         },
         jsPDF: { 
           unit: 'mm', 
@@ -619,8 +647,12 @@ export default function ConsultationPage() {
         }
       };
       
+      console.log('Starting PDF generation...');
+      
       // Generate PDF
       await html2pdf().set(opt).from(element).save();
+      
+      console.log('PDF generated successfully');
       
       // Clean up
       document.body.removeChild(element);
@@ -643,13 +675,22 @@ export default function ConsultationPage() {
   };
 
   const handlePasswordSubmit = (values: z.infer<typeof passwordSchema>) => {
+    console.log('Password submitted:', values.password);
     setIsPasswordProtected(true);
     setShowPasswordDialog(false);
+    
+    // Store password in form for later use
+    passwordForm.setValue('password', values.password);
+    
     toast({
       title: "PDF Dilindungi",
       description: `PDF akan dibuat dengan password: ${values.password}`,
     });
-    printPDF();
+    
+    // Wait a bit for state to update, then generate PDF
+    setTimeout(() => {
+      printPDF();
+    }, 100);
   };
 
   const scheduleUrl = `https://wa.me/${DOCTOR_WHATSAPP_NUMBER}?text=${encodeURIComponent("Halo, saya ingin menjadwalkan sesi konsultasi kesehatan.")}`;
