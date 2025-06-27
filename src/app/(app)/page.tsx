@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !db) return;
 
     // Fetch Blood Pressure Readings in real-time
     const bpQuery = query(collection(db, "users", user.uid, "readings"), orderBy("timestamp", "desc"));
@@ -84,7 +84,7 @@ export default function DashboardPage() {
     .reduce((total, log) => total + log.steps, 0);
 
   const handleNewReading = async (values: Omit<BloodPressureReading, "id" | "timestamp">) => {
-    if (!user) return;
+    if (!user || !db) return;
     try {
       await addDoc(collection(db, "users", user.uid, "readings"), {
         ...values,
@@ -107,7 +107,7 @@ export default function DashboardPage() {
 
   const getReadingStatus = (systolic: number, diastolic: number) => {
     if (systolic < 90 || diastolic < 60) return { text: "Rendah", color: "text-blue-500" };
-    if (systolic < 120 && diastolic < 80) return { text: "Normal", color: "text-green-500" };
+    if (systolic <= 120 && diastolic <= 80) return { text: "Normal", color: "text-green-500" };
     if (systolic >= 120 && systolic <= 129 && diastolic < 80) return { text: "Meningkat", color: "text-yellow-500" };
     if ((systolic >= 130 && systolic <= 139) || (diastolic >= 80 && diastolic <= 89)) return { text: "Tinggi (Tahap 1)", color: "text-orange-500" };
     if (systolic >= 140 || diastolic >= 90) return { text: "Tinggi (Tahap 2)", color: "text-red-500" };
