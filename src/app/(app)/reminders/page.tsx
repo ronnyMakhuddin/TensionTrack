@@ -28,11 +28,34 @@ const reminderSchema = z.object({
   title: z.string().min(3, "Judul harus memiliki setidaknya 3 karakter."),
   type: z.enum(['medication', 'measurement', 'activity']),
   frequency: z.enum(['once', 'multiple']),
-  times: z.array(z.string()).min(1, "Pilih setidaknya satu waktu."),
-  interval: z.number().min(1, "Interval harus minimal 1 jam.").max(24, "Interval maksimal 24 jam."),
+  time: z.string().optional(),
+  times: z.array(z.string()).optional(),
+  interval: z.number().optional(),
   days: z.array(z.number()).min(1, "Pilih setidaknya satu hari."),
   dosage: z.string().optional(),
   notes: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.frequency === 'once' && !data.time) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Waktu harus diisi untuk frekuensi sekali sehari.",
+      path: ["time"],
+    });
+  }
+  if (data.frequency === 'multiple' && (!data.times || data.times.length === 0)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Pilih setidaknya satu waktu untuk multiple times.",
+      path: ["times"],
+    });
+  }
+  if (data.frequency === 'multiple' && !data.interval) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Interval harus diisi untuk multiple times.",
+      path: ["interval"],
+    });
+  }
 });
 
 const dayLabels = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
@@ -72,7 +95,8 @@ export default function RemindersPage() {
       title: "",
       type: "medication",
       frequency: "once",
-      times: ["08:00"],
+      time: "08:00",
+      times: [],
       interval: 8,
       days: [],
       dosage: "",
@@ -206,7 +230,7 @@ export default function RemindersPage() {
                 Tambah Pengingat
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Tambah Pengingat Baru</DialogTitle>
               </DialogHeader>
@@ -219,178 +243,133 @@ export default function RemindersPage() {
                       <FormItem>
                         <FormLabel>Judul Pengingat</FormLabel>
                         <FormControl>
-                          <Input placeholder="misal: Minum obat tekanan darah" {...field} />
+                          <Input placeholder="misal: Minum obat pagi" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
-                  <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Jenis</FormLabel>
-                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                                <SelectTrigger>
-                                <SelectValue placeholder="Pilih jenis pengingat" />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                {typeOptions.map(opt => (
-                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {watchType === "medication" && (
-                    <>
-                      <FormField
-                        control={form.control}
-                        name="frequency"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Frekuensi</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Pilih frekuensi" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="once">Sekali sehari</SelectItem>
-                                <SelectItem value="multiple">Multiple times (3x1, 2x1, dll)</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {watchFrequency === "once" ? (
-                        <FormField
-                          control={form.control}
-                          name="times"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Waktu</FormLabel>
-                              <Select onValueChange={(value) => field.onChange([value])} value={field.value[0]}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Pilih waktu" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {commonTimes.map(time => (
-                                    <SelectItem key={time.value} value={time.value}>{time.label}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      ) : (
-                        <div className="space-y-3">
-                          <FormField
-                            control={form.control}
-                            name="times"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Waktu Mulai</FormLabel>
-                                <Select onValueChange={(value) => field.onChange([value])} value={field.value[0]}>
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Pilih waktu mulai" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {commonTimes.map(time => (
-                                      <SelectItem key={time.value} value={time.value}>{time.label}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="interval"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Interval (jam)</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    placeholder="8" 
-                                    {...field}
-                                    onChange={(e) => field.onChange(Number(e.target.value))}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          {form.watch("times")[0] && form.watch("interval") && (
-                            <div className="p-3 bg-muted rounded-lg">
-                              <p className="text-sm font-medium mb-2">Jadwal yang akan dibuat:</p>
-                              <div className="space-y-1">
-                                {generateMultipleTimes(form.watch("times")[0], form.watch("interval")).map((time, index) => (
-                                  <div key={index} className="flex items-center gap-2">
-                                    <Clock className="h-3 w-3" />
-                                    <span className="text-sm">{time} WIB</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      <FormField
-                        control={form.control}
-                        name="dosage"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Dosis (Opsional)</FormLabel>
-                            <FormControl>
-                              <Input placeholder="misal: 1 tablet" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </>
-                  )}
-
-                  {watchType !== "medication" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="times"
+                      name="type"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Waktu</FormLabel>
-                          <Select onValueChange={(value) => field.onChange([value])} value={field.value[0]}>
+                          <FormLabel>Jenis</FormLabel>
+                           <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                  <SelectTrigger>
+                                  <SelectValue placeholder="Pilih jenis pengingat" />
+                                  </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                  {typeOptions.map(opt => (
+                                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                  ))}
+                              </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="frequency"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Frekuensi</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Pilih waktu" />
+                                <SelectValue placeholder="Pilih frekuensi" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {commonTimes.map(time => (
-                                <SelectItem key={time.value} value={time.value}>{time.label}</SelectItem>
-                              ))}
+                              <SelectItem value="once">Sekali sehari</SelectItem>
+                              <SelectItem value="multiple">Multiple times</SelectItem>
                             </SelectContent>
                           </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {form.watch("frequency") === "multiple" ? (
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="times"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Waktu Pengingat</FormLabel>
+                            <div className="space-y-2">
+                              {field.value?.map((time, index) => (
+                                <div key={index} className="flex gap-2">
+                                  <FormControl>
+                                    <Input
+                                      type="time"
+                                      value={time}
+                                      onChange={(e) => {
+                                        const newTimes = [...(field.value || [])];
+                                        newTimes[index] = e.target.value;
+                                        field.onChange(newTimes);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      const newTimes = field.value?.filter((_, i) => i !== index) || [];
+                                      field.onChange(newTimes);
+                                    }}
+                                  >
+                                    Hapus
+                                  </Button>
+                                </div>
+                              ))}
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  const newTimes = [...(field.value || []), "08:00"];
+                                  field.onChange(newTimes);
+                                }}
+                              >
+                                + Tambah Waktu
+                              </Button>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="interval"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Interval (jam)</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="1" max="24" placeholder="8" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  ) : (
+                    <FormField
+                      control={form.control}
+                      name="time"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Waktu</FormLabel>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -411,10 +390,7 @@ export default function RemindersPage() {
                               name="days"
                               render={({ field }) => {
                                 return (
-                                  <FormItem
-                                    key={day.id}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
-                                  >
+                                  <FormItem key={day.id} className="flex flex-row items-start space-x-3 space-y-0">
                                     <FormControl>
                                       <Checkbox
                                         checked={field.value?.includes(day.id)}
@@ -443,28 +419,41 @@ export default function RemindersPage() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Catatan (Opsional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Catatan tambahan..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {form.watch("type") === "medication" && (
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="dosage"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Dosis (Opsional)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="misal: 1 tablet" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="notes"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Catatan (Opsional)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Catatan tambahan" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
 
-                  <div className="flex gap-2">
-                    <Button type="submit" className="flex-1">
-                      Simpan Pengingat
-                    </Button>
+                  <div className="flex gap-2 pt-4">
+                    <Button type="submit" className="flex-1">Simpan</Button>
                     <DialogClose asChild>
-                      <Button variant="outline" type="button">
-                        Batal
-                      </Button>
+                      <Button variant="outline" className="flex-1">Batal</Button>
                     </DialogClose>
                   </div>
                 </form>
