@@ -72,7 +72,7 @@ const activityTypes = [
   { value: "stress", label: "Stres", impact: "negative" },
   { value: "meditation", label: "Meditasi", impact: "positive" },
   { value: "yoga", label: "Yoga", impact: "positive" },
-  { value: "gaming", label: "Bermain Game", impact: "neutral" },
+  { value: "gaming", label: "Bermain Game", impact: "negative" },
   { value: "social", label: "Aktivitas Sosial", impact: "positive" },
   { value: "work", label: "Bekerja", impact: "neutral" },
   { value: "other", label: "Lainnya", impact: "neutral" },
@@ -520,6 +520,12 @@ export default function ActivityPage() {
                   <div>
                     <h4 className="font-semibold mb-2 text-purple-600">Saran untuk Stres:</h4>
                     <p className="text-sm">{advice.specificAdvice.stress}</p>
+                  </div>
+                )}
+                {advice.specificAdvice.gaming && (
+                  <div>
+                    <h4 className="font-semibold mb-2 text-orange-600">Saran untuk Gaming:</h4>
+                    <p className="text-sm">{advice.specificAdvice.gaming}</p>
                   </div>
                 )}
               </div>

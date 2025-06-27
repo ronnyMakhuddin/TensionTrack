@@ -30,6 +30,7 @@ const ActivityAdviceOutputSchema = z.object({
     alcohol: z.string().optional().describe('Saran khusus untuk konsumsi alkohol'),
     exercise: z.string().optional().describe('Saran khusus untuk olahraga'),
     stress: z.string().optional().describe('Saran khusus untuk manajemen stres'),
+    gaming: z.string().optional().describe('Saran khusus untuk bermain game'),
   }),
   warningSigns: z.array(z.string()).describe('Tanda-tanda masalah kesehatan yang perlu diperhatikan'),
   motivationTips: z.array(z.string()).describe('Tips motivasi untuk perubahan gaya hidup'),
@@ -64,9 +65,10 @@ Berikan saran yang:
 2. Memberikan rekomendasi spesifik untuk aktivitas yang perlu ditingkatkan/dikurangi
 3. Menyarankan aktivitas pengganti yang lebih sehat
 4. Memberikan saran khusus untuk kebiasaan tidak sehat (merokok, alkohol, dll)
-5. Mempertimbangkan kondisi hipertensi dalam rekomendasi
-6. Memberikan tips motivasi untuk perubahan gaya hidup
-7. Mengidentifikasi tanda-tanda masalah kesehatan yang perlu diperhatikan
+5. Memberikan saran khusus untuk gaming, terutama untuk durasi lama (>60 menit)
+6. Mempertimbangkan kondisi hipertensi dalam rekomendasi
+7. Memberikan tips motivasi untuk perubahan gaya hidup
+8. Mengidentifikasi tanda-tanda masalah kesehatan yang perlu diperhatikan
 
 Gunakan bahasa yang mudah dipahami dan berikan rekomendasi yang praktis untuk kehidupan sehari-hari.`,
 });
