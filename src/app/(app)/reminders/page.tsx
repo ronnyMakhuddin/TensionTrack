@@ -30,7 +30,7 @@ const reminderSchema = z.object({
   frequency: z.enum(['once', 'multiple']),
   time: z.string().optional(),
   times: z.array(z.string()).optional(),
-  interval: z.number().optional(),
+  interval: z.coerce.number().optional(),
   days: z.array(z.number()).min(1, "Pilih setidaknya satu hari."),
   dosage: z.string().optional(),
   notes: z.string().optional(),
@@ -49,10 +49,10 @@ const reminderSchema = z.object({
       path: ["times"],
     });
   }
-  if (data.frequency === 'multiple' && !data.interval) {
+  if (data.frequency === 'multiple' && (!data.interval || data.interval < 1)) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "Interval harus diisi untuk multiple times.",
+      message: "Interval harus minimal 1 jam untuk multiple times.",
       path: ["interval"],
     });
   }
@@ -353,7 +353,13 @@ export default function RemindersPage() {
                           <FormItem>
                             <FormLabel>Interval (jam)</FormLabel>
                             <FormControl>
-                              <Input type="number" min="1" max="24" placeholder="8" {...field} />
+                              <Input 
+                                type="number" 
+                                min="1" 
+                                max="24" 
+                                placeholder="8" 
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
