@@ -22,6 +22,9 @@ export interface ActivityLog {
 export interface SleepLog {
   id: string;
   duration: number; // in hours
+  quality?: string; // kualitas tidur
+  healthConditions?: string; // kondisi kesehatan yang mempengaruhi tidur
+  lifestyleFactors?: string; // faktor gaya hidup yang mempengaruhi tidur
   timestamp: string; // ISO string
 }
 
