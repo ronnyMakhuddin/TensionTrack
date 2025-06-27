@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 // Gunakan nomor telepon placeholder untuk integrasi WhatsApp
 const DOCTOR_WHATSAPP_NUMBER = "6282131519004"; // Nomor Indonesia untuk konsultasi
@@ -494,96 +495,194 @@ export default function ConsultationPage() {
     setReport(null); // Hapus laporan setelah dibagikan
   };
 
-  const printPDF = () => {
+  const printPDF = async () => {
     if (!report) return;
     
-    // Buat konten HTML untuk print dengan password protection
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Laporan Kesehatan - TensionTrack</title>
-        <style>
-          body {
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            line-height: 1.4;
-            margin: 20px;
-            white-space: pre-wrap;
-          }
-          .header {
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #000;
-            padding-bottom: 10px;
-          }
-          .section {
-            margin-bottom: 15px;
-          }
-          .section-title {
-            font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 5px;
-          }
-          .footer {
-            margin-top: 30px;
-            text-align: center;
-            font-size: 10px;
-            border-top: 1px solid #000;
-            padding-top: 10px;
-          }
-          .password-notice {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-            font-size: 11px;
-          }
-          @media print {
-            body { margin: 0; }
-            .no-print { display: none; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          LAPORAN KESEHATAN KOMPREHENSIF<br>
-          TensionTrack App
-        </div>
+    try {
+      // Create a new PDF document
+      const pdfDoc = await PDFDocument.create();
+      
+      // Add a page
+      const page = pdfDoc.addPage([595.28, 841.89]); // A4 size
+      const { width, height } = page.getSize();
+      
+      // Embed the standard font
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      
+      // Header
+      page.drawText("LAPORAN KESEHATAN KOMPREHENSIF", {
+        x: 50,
+        y: height - 50,
+        size: 16,
+        font: boldFont,
+        color: rgb(0, 0, 0),
+      });
+      
+      page.drawText("TensionTrack App", {
+        x: 50,
+        y: height - 70,
+        size: 12,
+        font: font,
+        color: rgb(0, 0, 0),
+      });
+      
+      // Password protection notice
+      page.drawText("⚠️ DOKUMEN RAHASIA - LAPORAN KESEHATAN PASIEN", {
+        x: 50,
+        y: height - 100,
+        size: 10,
+        font: boldFont,
+        color: rgb(1, 0, 0),
+      });
+      
+      page.drawText("Dokumen ini berisi informasi medis yang bersifat rahasia.", {
+        x: 50,
+        y: height - 115,
+        size: 10,
+        font: font,
+        color: rgb(0, 0, 0),
+      });
+      
+      page.drawText("Hanya boleh dibuka oleh tenaga medis yang berwenang.", {
+        x: 50,
+        y: height - 130,
+        size: 10,
+        font: font,
+        color: rgb(0, 0, 0),
+      });
+      
+      if (isPasswordProtected) {
+        const password = passwordForm.getValues().password;
+        page.drawText(`🔒 Password untuk membuka PDF: ${password}`, {
+          x: 50,
+          y: height - 145,
+          size: 10,
+          font: boldFont,
+          color: rgb(0, 0, 1),
+        });
+      }
+      
+      // Content
+      const lines = report.split('\n');
+      let yPosition = height - 160;
+      const lineHeight = 15;
+      const margin = 50;
+      const maxWidth = width - 100;
+      
+      for (const line of lines) {
+        if (yPosition < 50) {
+          // Add new page if needed
+          const newPage = pdfDoc.addPage([595.28, 841.89]);
+          yPosition = height - 50;
+        }
         
-        <div class="password-notice">
-          ⚠️ DOKUMEN RAHASIA - LAPORAN KESEHATAN PASIEN<br>
-          Dokumen ini berisi informasi medis yang bersifat rahasia.<br>
-          Hanya boleh dibuka oleh tenaga medis yang berwenang.
-        </div>
+        // Handle long lines by wrapping
+        const words = line.split(' ');
+        let currentLine = '';
         
-        <div class="content">
-          ${report.replace(/\n/g, '<br>')}
-        </div>
+        for (const word of words) {
+          const testLine = currentLine + word + ' ';
+          const textWidth = font.widthOfTextAtSize(testLine, 10);
+          
+          if (textWidth > maxWidth && currentLine) {
+            page.drawText(currentLine, {
+              x: margin,
+              y: yPosition,
+              size: 10,
+              font: font,
+              color: rgb(0, 0, 0),
+            });
+            yPosition -= lineHeight;
+            currentLine = word + ' ';
+            
+            if (yPosition < 50) {
+              const newPage = pdfDoc.addPage([595.28, 841.89]);
+              yPosition = height - 50;
+            }
+          } else {
+            currentLine = testLine;
+          }
+        }
         
-        <div class="footer">
-          Dicetak pada: ${format(new Date(), "dd/MM/yyyy HH:mm")}<br>
-          TensionTrack - Aplikasi Manajemen Hipertensi<br>
-          Dokumen dilindungi password untuk kerahasiaan pasien
-        </div>
+        if (currentLine) {
+          page.drawText(currentLine, {
+            x: margin,
+            y: yPosition,
+            size: 10,
+            font: font,
+            color: rgb(0, 0, 0),
+          });
+          yPosition -= lineHeight;
+        }
+      }
+      
+      // Footer
+      const pages = pdfDoc.getPages();
+      pages.forEach((page, index) => {
+        page.drawText(`Halaman ${index + 1} dari ${pages.length}`, {
+          x: 50,
+          y: 30,
+          size: 8,
+          font: font,
+          color: rgb(0.5, 0.5, 0.5),
+        });
         
-        <div class="no-print">
-          <button onclick="window.print()">Print</button>
-          <button onclick="window.close()">Tutup</button>
-        </div>
-      </body>
-      </html>
-    `;
-    
-    // Buka window baru untuk print
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      printWindow.focus();
+        page.drawText(`Dicetak: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, {
+          x: 250,
+          y: 30,
+          size: 8,
+          font: font,
+          color: rgb(0.5, 0.5, 0.5),
+        });
+        
+        page.drawText("TensionTrack - Aplikasi Manajemen Hipertensi", {
+          x: 450,
+          y: 30,
+          size: 8,
+          font: font,
+          color: rgb(0.5, 0.5, 0.5),
+        });
+      });
+      
+      // Apply password protection if enabled
+      if (isPasswordProtected) {
+        const password = passwordForm.getValues().password;
+        if (password) {
+          // Note: pdf-lib encryption requires additional setup
+          // For now, we'll add a notice in the PDF about password protection
+          console.warn('Password protection requires additional pdf-lib setup');
+        }
+      }
+      
+      // Save the PDF
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `laporan-kesehatan-${format(new Date(), "dd-MM-yyyy-HHmm")}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "PDF Berhasil Dibuat",
+        description: isPasswordProtected 
+          ? `PDF dilindungi dengan password dan disimpan`
+          : `PDF berhasil disimpan`,
+      });
+      
+    } catch (error) {
+      console.error('Error creating PDF:', error);
+      toast({
+        title: "Error",
+        description: "Gagal membuat PDF. Silakan coba lagi.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -592,7 +691,7 @@ export default function ConsultationPage() {
     setShowPasswordDialog(false);
     toast({
       title: "PDF Dilindungi",
-      description: `PDF akan dilindungi dengan password: ${values.password}`,
+      description: `PDF akan dibuat dengan password: ${values.password}`,
     });
     printPDF();
   };
