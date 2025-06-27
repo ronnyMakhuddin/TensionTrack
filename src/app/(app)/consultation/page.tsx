@@ -29,6 +29,20 @@ import { z } from "zod";
 // Gunakan nomor telepon placeholder untuk integrasi WhatsApp
 const DOCTOR_WHATSAPP_NUMBER = "6282131519004"; // Nomor Indonesia untuk konsultasi
 
+// Fungsi untuk menghitung umur dari tanggal lahir
+const calculateAge = (birthDate: string): number => {
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  
+  return age;
+};
+
 const passwordSchema = z.object({
   password: z.string().min(4, "Password minimal 4 karakter").max(20, "Password maksimal 20 karakter"),
 });
@@ -94,7 +108,8 @@ export default function ConsultationPage() {
       reportContent += "==================\n";
       if (patientProfile) {
         reportContent += `Nama: ${patientProfile.name}\n`;
-        reportContent += `Umur: ${patientProfile.age} tahun\n`;
+        reportContent += `Tanggal Lahir: ${new Date(patientProfile.birthDate).toLocaleDateString('id-ID')}\n`;
+        reportContent += `Umur: ${calculateAge(patientProfile.birthDate)} tahun\n`;
         reportContent += `Jenis Kelamin: ${patientProfile.gender === "male" ? "Laki-laki" : "Perempuan"}\n`;
         reportContent += `Tinggi Badan: ${patientProfile.height} cm\n`;
         reportContent += `Berat Badan: ${patientProfile.weight} kg\n`;
@@ -121,6 +136,16 @@ export default function ConsultationPage() {
         if (patientProfile.medicalHistory.hasDiabetes) reportContent += `  • Diabetes\n`;
         if (patientProfile.medicalHistory.hasHeartDisease) reportContent += `  • Penyakit Jantung\n`;
         if (patientProfile.medicalHistory.hasKidneyDisease) reportContent += `  • Penyakit Ginjal\n`;
+        if (patientProfile.medicalHistory.otherConditions && patientProfile.medicalHistory.otherConditions.length > 0) {
+          reportContent += `  • Riwayat Tambahan:\n`;
+          if (Array.isArray(patientProfile.medicalHistory.otherConditions)) {
+            patientProfile.medicalHistory.otherConditions.forEach(condition => {
+              reportContent += `    - ${condition}\n`;
+            });
+          } else {
+            reportContent += `    - ${patientProfile.medicalHistory.otherConditions}\n`;
+          }
+        }
       } else {
         reportContent += "Data identitas pasien belum lengkap.\n";
         reportContent += "Silakan lengkapi profil di menu Profil.\n";

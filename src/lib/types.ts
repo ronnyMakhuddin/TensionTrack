@@ -76,7 +76,7 @@ export interface ExerciseLog {
 export interface PatientProfile {
   id: string;
   name: string;
-  age: number;
+  birthDate: string; // ISO string format YYYY-MM-DD
   gender: 'male' | 'female';
   height: number; // in cm
   weight: number; // in kg
@@ -92,7 +92,7 @@ export interface PatientProfile {
     hasDiabetes: boolean;
     hasHeartDisease: boolean;
     hasKidneyDisease: boolean;
-    otherConditions: string[];
+    otherConditions: string[]; // Riwayat kesehatan tambahan
   };
   medications: {
     name: string;

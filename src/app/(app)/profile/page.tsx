@@ -18,10 +18,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { Textarea } from "@/components/ui/textarea";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Nama minimal 2 karakter"),
-  age: z.coerce.number().min(1, "Umur minimal 1 tahun").max(120, "Umur maksimal 120 tahun"),
+  birthDate: z.string().min(1, "Tanggal lahir wajib diisi"),
   gender: z.enum(["male", "female"]),
   height: z.coerce.number().min(50, "Tinggi minimal 50 cm").max(250, "Tinggi maksimal 250 cm"),
   weight: z.coerce.number().min(10, "Berat minimal 10 kg").max(300, "Berat maksimal 300 kg"),
@@ -37,8 +38,23 @@ const profileSchema = z.object({
     hasDiabetes: z.boolean(),
     hasHeartDisease: z.boolean(),
     hasKidneyDisease: z.boolean(),
+    otherConditions: z.string().optional(),
   }),
 });
+
+// Fungsi untuk menghitung umur dari tanggal lahir
+const calculateAge = (birthDate: string): number => {
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  
+  return age;
+};
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -51,7 +67,7 @@ export default function ProfilePage() {
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: "",
-      age: 0,
+      birthDate: "",
       gender: "male",
       height: 0,
       weight: 0,
@@ -67,6 +83,7 @@ export default function ProfilePage() {
         hasDiabetes: false,
         hasHeartDisease: false,
         hasKidneyDisease: false,
+        otherConditions: "",
       },
     },
   });
@@ -76,13 +93,23 @@ export default function ProfilePage() {
     
     const fetchProfile = async () => {
       try {
-        const docRef = doc(db, "users", user.uid, "profile", "data");
+        const docRef = doc(db!, "users", user.uid, "profile", "data");
         const docSnap = await getDoc(docRef);
         
         if (docSnap.exists()) {
           const data = docSnap.data() as PatientProfile;
           setProfile(data);
-          form.reset(data);
+          // Convert otherConditions array to string for form
+          const formData = {
+            ...data,
+            medicalHistory: {
+              ...data.medicalHistory,
+              otherConditions: Array.isArray(data.medicalHistory.otherConditions) 
+                ? data.medicalHistory.otherConditions.join(', ')
+                : data.medicalHistory.otherConditions || ""
+            }
+          };
+          form.reset(formData);
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -99,16 +126,35 @@ export default function ProfilePage() {
     fetchProfile();
   }, [user, form, toast]);
 
-  const onSubmit = async (values: z.infer<typeof profileSchema>) => {
+  const onSubmit = async (data: z.infer<typeof profileSchema>) => {
     if (!user || !db) return;
     
     try {
       const profileData: PatientProfile = {
         id: user.uid,
-        ...values,
+        name: data.name,
+        birthDate: data.birthDate,
+        gender: data.gender,
+        height: data.height,
+        weight: data.weight,
+        phoneNumber: data.phoneNumber,
+        address: data.address,
+        emergencyContact: data.emergencyContact,
+        medicalHistory: {
+          ...data.medicalHistory,
+          otherConditions: data.medicalHistory.otherConditions 
+            ? data.medicalHistory.otherConditions.split(',').map(s => s.trim()).filter(s => s.length > 0)
+            : [],
+        },
+        medications: [],
+        allergies: [],
+        bloodType: 'unknown',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
-      
-      await setDoc(doc(db, "users", user.uid, "profile", "data"), profileData);
+
+      const docRef = doc(db!, "users", user.uid, "profile", "data");
+      await setDoc(docRef, profileData);
       setProfile(profileData);
       setIsEditing(false);
       
@@ -187,12 +233,12 @@ export default function ProfilePage() {
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="age"
+                      name="birthDate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Umur (tahun)</FormLabel>
+                          <FormLabel>Tanggal Lahir</FormLabel>
                           <FormControl>
-                            <Input type="number" {...field} />
+                            <Input type="date" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -360,6 +406,24 @@ export default function ProfilePage() {
                         </FormItem>
                       )}
                     />
+                    
+                    <FormField
+                      control={form.control}
+                      name="medicalHistory.otherConditions"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Riwayat Kesehatan Tambahan</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Contoh: Asma, Alergi makanan, Operasi sebelumnya, dll. (Opsional)"
+                              className="resize-none"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -448,8 +512,8 @@ export default function ProfilePage() {
                         <p className="text-sm">{profile.name}</p>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Umur</label>
-                        <p className="text-sm">{profile.age} tahun</p>
+                        <label className="text-sm font-medium text-muted-foreground">Tanggal Lahir</label>
+                        <p className="text-sm">{new Date(profile.birthDate).toLocaleDateString('id-ID')} ({calculateAge(profile.birthDate)} tahun)</p>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -525,6 +589,23 @@ export default function ProfilePage() {
                       <span className="text-sm">Penyakit Ginjal</span>
                     </div>
                   </div>
+                  
+                  {profile.medicalHistory.otherConditions && profile.medicalHistory.otherConditions.length > 0 && (
+                    <div className="mt-4">
+                      <label className="text-sm font-medium text-muted-foreground">Riwayat Kesehatan Tambahan:</label>
+                      <div className="mt-2 space-y-1">
+                        {Array.isArray(profile.medicalHistory.otherConditions) 
+                          ? profile.medicalHistory.otherConditions.map((condition, index) => (
+                              <div key={index} className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                                <span className="text-sm">{condition}</span>
+                              </div>
+                            ))
+                          : <span className="text-sm">{profile.medicalHistory.otherConditions}</span>
+                        }
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
