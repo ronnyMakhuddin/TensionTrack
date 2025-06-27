@@ -7,23 +7,9 @@ export const metadata: Metadata = {
   title: "TensionTrack",
   description: "Aplikasi ramah untuk membantu Anda mengelola hipertensi dan meningkatkan gaya hidup Anda.",
   icons: {
-    icon: [
-      {
-        url: "/favicon.svg",
-        type: "image/svg+xml",
-      },
-      {
-        url: "/favicon.ico",
-        sizes: "any",
-      },
-    ],
-    apple: [
-      {
-        url: "/apple-touch-icon.png",
-        sizes: "180x180",
-        type: "image/png",
-      },
-    ],
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
   },
   manifest: "/manifest.json",
 };
@@ -42,6 +28,9 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="shortcut icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/favicon.svg" />
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
