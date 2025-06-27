@@ -290,19 +290,21 @@ export default function ActivityPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="steps"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Jumlah Langkah</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="misal: 5000" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {form.watch("activityType") === "walking" && (
+                  <FormField
+                    control={form.control}
+                    name="steps"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Jumlah Langkah</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="misal: 5000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
                 <FormField
                   control={form.control}
                   name="duration"
