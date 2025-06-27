@@ -1,7 +1,7 @@
 "use client"
 
 import { format } from "date-fns"
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+import { LineChart, Line, CartesianGrid, XAxis, YAxis } from "recharts"
 
 import type { BloodPressureReading } from "@/lib/types"
 import {
@@ -11,14 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-  type ChartConfig,
-} from "@/components/ui/chart"
 
 interface BloodPressureChartProps {
   data: BloodPressureReading[]
@@ -26,17 +18,6 @@ interface BloodPressureChartProps {
   title?: string
   description?: string
 }
-
-const chartConfig = {
-  systolic: {
-    label: "Sistolik",
-    color: "hsl(var(--chart-1))",
-  },
-  diastolic: {
-    label: "Diastolik",
-    color: "hsl(var(--chart-2))",
-  },
-} satisfies ChartConfig
 
 export function BloodPressureChart({ data, showReadings = 7, title, description }: BloodPressureChartProps) {
   const chartData = data
@@ -57,24 +38,39 @@ export function BloodPressureChart({ data, showReadings = 7, title, description 
       </CardHeader>
       <CardContent>
         {data.length > 0 ? (
-          <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-            <BarChart accessibilityLayer data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="date"
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
+          <div className="space-y-4">
+            <LineChart width={400} height={200} data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Line 
+                type="monotone" 
+                dataKey="systolic" 
+                stroke="#ef4444" 
+                strokeWidth={2}
+                name="Sistolik"
+                dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
               />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent indicator="dot" />}
+              <Line 
+                type="monotone" 
+                dataKey="diastolic" 
+                stroke="#3b82f6" 
+                strokeWidth={2}
+                name="Diastolik"
+                dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
               />
-              <ChartLegend content={<ChartLegendContent />} />
-              <Bar dataKey="systolic" fill="var(--color-systolic)" radius={4} />
-              <Bar dataKey="diastolic" fill="var(--color-diastolic)" radius={4} />
-            </BarChart>
-          </ChartContainer>
+            </LineChart>
+            <div className="flex justify-center space-x-6">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <span className="text-sm">Sistolik</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                <span className="text-sm">Diastolik</span>
+              </div>
+            </div>
+          </div>
         ) : (
           <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
             Catat bacaan tekanan darah pertama Anda untuk melihat grafik.

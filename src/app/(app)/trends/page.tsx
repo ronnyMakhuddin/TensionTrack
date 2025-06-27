@@ -580,27 +580,39 @@ Minggu 4: Konsolidasi dan evaluasi progress
           </CardHeader>
           <CardContent>
             {activityChartData.length > 0 ? (
-              <LineChart width={400} height={200} data={activityChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Line 
-                  type="monotone" 
-                  dataKey="steps" 
-                  stroke="#3b82f6" 
-                  strokeWidth={2}
-                  name="Langkah"
-                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="duration" 
-                  stroke="#10b981" 
-                  strokeWidth={2}
-                  name="Durasi (menit)"
-                  dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-                />
-              </LineChart>
+              <div className="space-y-4">
+                <LineChart width={400} height={200} data={activityChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Line 
+                    type="monotone" 
+                    dataKey="steps" 
+                    stroke="#3b82f6" 
+                    strokeWidth={2}
+                    name="Langkah"
+                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="duration" 
+                    stroke="#10b981" 
+                    strokeWidth={2}
+                    name="Durasi (menit)"
+                    dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                  />
+                </LineChart>
+                <div className="flex justify-center space-x-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <span className="text-sm">Langkah</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span className="text-sm">Durasi (menit)</span>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
                 Catat aktivitas pertama Anda untuk melihat grafik.
@@ -615,19 +627,27 @@ Minggu 4: Konsolidasi dan evaluasi progress
           </CardHeader>
           <CardContent>
             {sleepChartData.length > 0 ? (
-              <LineChart width={400} height={200} data={sleepChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Line 
-                  type="monotone" 
-                  dataKey="duration" 
-                  stroke="#8b5cf6" 
-                  strokeWidth={2}
-                  name="Durasi (jam)"
-                  dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
-                />
-              </LineChart>
+              <div className="space-y-4">
+                <LineChart width={400} height={200} data={sleepChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Line 
+                    type="monotone" 
+                    dataKey="duration" 
+                    stroke="#8b5cf6" 
+                    strokeWidth={2}
+                    name="Durasi (jam)"
+                    dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
+                  />
+                </LineChart>
+                <div className="flex justify-center">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                    <span className="text-sm">Durasi (jam)</span>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
                 Catat data tidur pertama Anda untuk melihat grafik.
@@ -642,27 +662,39 @@ Minggu 4: Konsolidasi dan evaluasi progress
           </CardHeader>
           <CardContent>
             {exerciseChartData.length > 0 ? (
-              <LineChart width={400} height={200} data={exerciseChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Line 
-                  type="monotone" 
-                  dataKey="duration" 
-                  stroke="#f59e0b" 
-                  strokeWidth={2}
-                  name="Durasi (menit)"
-                  dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="pulse" 
-                  stroke="#ef4444" 
-                  strokeWidth={2}
-                  name="Detak Jantung (BPM)"
-                  dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
-                />
-              </LineChart>
+              <div className="space-y-4">
+                <LineChart width={400} height={200} data={exerciseChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Line 
+                    type="monotone" 
+                    dataKey="duration" 
+                    stroke="#f59e0b" 
+                    strokeWidth={2}
+                    name="Durasi (menit)"
+                    dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="pulse" 
+                    stroke="#ef4444" 
+                    strokeWidth={2}
+                    name="Detak Jantung (BPM)"
+                    dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
+                  />
+                </LineChart>
+                <div className="flex justify-center space-x-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                    <span className="text-sm">Durasi (menit)</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <span className="text-sm">Detak Jantung (BPM)</span>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
                 Catat latihan pertama Anda untuk melihat grafik.
