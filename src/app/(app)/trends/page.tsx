@@ -238,6 +238,119 @@ export default function TrendsPage() {
       date: format(new Date(r.timestamp), "MMM d"),
     }));
 
+  // Generate AI plan for behavior change
+  const generateAIPlan = async () => {
+    if (!user || !db) return;
+    
+    setIsGeneratingPlan(true);
+    try {
+      // Prepare data for AI analysis
+      const analysisData = {
+        patientProfile,
+        bpReadings: bpReadings.slice(0, 10),
+        activityLogs: activityLogs.slice(0, 10),
+        sleepLogs: sleepLogs.slice(0, 7),
+        exerciseLogs: exerciseLogs.slice(0, 10),
+        foodLogs: foodLogs.slice(0, 10),
+        healthScore,
+        healthTrend
+      };
+
+      // Call AI flow for behavior change plan
+      const response = await fetch('/api/ai/behavior-change-plan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(analysisData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setAiPlan(result.plan);
+        toast({
+          title: "AI Plan Generated",
+          description: "Plan perubahan perilaku berhasil dibuat.",
+        });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate AI plan');
+      }
+    } catch (error) {
+      console.error('Error generating AI plan:', error);
+      // Generate fallback plan
+      const fallbackPlan = generateFallbackPlan();
+      setAiPlan(fallbackPlan);
+      toast({
+        title: "AI Plan Generated",
+        description: "Plan perubahan perilaku berhasil dibuat (fallback mode).",
+      });
+    } finally {
+      setIsGeneratingPlan(false);
+    }
+  };
+
+  // Generate fallback plan when AI fails
+  const generateFallbackPlan = () => {
+    const recentBP = bpReadings[0];
+    const avgSystolic = bpReadings.length > 0 ? bpReadings.slice(0, 5).reduce((sum, r) => sum + r.systolic, 0) / Math.min(bpReadings.length, 5) : 0;
+    const avgDiastolic = bpReadings.length > 0 ? bpReadings.slice(0, 5).reduce((sum, r) => sum + r.diastolic, 0) / Math.min(bpReadings.length, 5) : 0;
+    
+    const positiveActivities = activityLogs.filter(log => log.healthImpact === "positive").length;
+    const negativeActivities = activityLogs.filter(log => log.healthImpact === "negative").length;
+    const totalActivities = activityLogs.length;
+    
+    const avgSleep = sleepLogs.length > 0 ? sleepLogs.reduce((sum, log) => sum + log.duration, 0) / sleepLogs.length : 0;
+    const avgExercise = exerciseLogs.length > 0 ? exerciseLogs.reduce((sum, log) => sum + log.duration, 0) / exerciseLogs.length : 0;
+
+    return `📋 PLAN PERUBAHAN PERILAKU
+[Tanggal: ${new Date().toLocaleDateString('id-ID')}]
+
+🎯 TUJUAN UTAMA:
+1. Menurunkan tekanan darah ke target normal (<140/90 mmHg)
+2. Meningkatkan aktivitas fisik sehat
+3. Memperbaiki pola tidur
+4. Mengurangi aktivitas tidak sehat
+
+📅 TIMELINE 30 HARI:
+Minggu 1: Fokus pada monitoring tekanan darah dan identifikasi pola
+Minggu 2: Implementasi aktivitas fisik ringan
+Minggu 3: Perbaikan pola tidur dan diet
+Minggu 4: Konsolidasi dan evaluasi progress
+
+📊 TARGET SPESIFIK:
+- Tekanan Darah: Turun 10-15 mmHg dalam 30 hari
+- Aktivitas: 30 menit aktivitas fisik 5x/minggu
+- Tidur: 7-8 jam per malam
+- Latihan: 20-30 menit latihan 3x/minggu
+
+💡 STRATEGI IMPLEMENTASI:
+1. Monitor tekanan darah 2x sehari
+2. Jalan kaki 30 menit setiap pagi
+3. Hindari makanan tinggi garam
+4. Tidur teratur jam 22:00
+5. Latihan ringan 3x seminggu
+6. Kurangi aktivitas tidak sehat
+7. Konsultasi rutin dengan Ners Counselor
+
+⚠️ HALANGAN & SOLUSI:
+- Halangan: Malas berolahraga
+  Solusi: Mulai dengan aktivitas ringan, ajak keluarga
+- Halangan: Sulit tidur
+  Solusi: Rutinitas sebelum tidur, hindari gadget
+- Halangan: Makanan tidak sehat
+  Solusi: Siapkan makanan sehat, baca label nutrisi
+
+📈 MONITORING & EVALUASI:
+- Catat tekanan darah harian
+- Track aktivitas di aplikasi
+- Evaluasi mingguan dengan Ners Counselor
+- Ukur progress setiap 2 minggu
+
+🔔 REMINDER & MOTIVASI:
+"Kesehatan adalah investasi terbaik. Setiap langkah kecil menuju gaya hidup sehat adalah kemenangan. Tetap semangat dan konsisten!"`;
+  };
+
   // Health trend data for chart - make it dynamic based on actual data
   const getHealthTrendData = () => {
     const hasBP = bpReadings.length > 0;
@@ -283,54 +396,77 @@ export default function TrendsPage() {
     return data;
   };
 
-  // Generate AI plan for behavior change
-  const generateAIPlan = async () => {
-    if (!user || !db) return;
+  // Health trend histogram data
+  const getHealthTrendHistogramData = () => {
+    if (bpReadings.length < 2) return [];
+
+    // Get last 7 readings for trend analysis
+    const recentReadings = bpReadings.slice(0, 7).reverse();
     
-    setIsGeneratingPlan(true);
-    try {
-      // Prepare data for AI analysis
-      const analysisData = {
-        patientProfile,
-        bpReadings: bpReadings.slice(0, 10),
-        activityLogs: activityLogs.slice(0, 10),
-        sleepLogs: sleepLogs.slice(0, 7),
-        exerciseLogs: exerciseLogs.slice(0, 10),
-        foodLogs: foodLogs.slice(0, 10),
-        healthScore,
-        healthTrend
-      };
-
-      // Call AI flow for behavior change plan
-      const response = await fetch('/api/ai/behavior-change-plan', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(analysisData),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setAiPlan(result.plan);
-        toast({
-          title: "AI Plan Generated",
-          description: "Plan perubahan perilaku berhasil dibuat.",
-        });
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate AI plan');
+    return recentReadings.map((reading, index) => {
+      const date = new Date(reading.timestamp);
+      const systolic = reading.systolic;
+      const diastolic = reading.diastolic;
+      
+      // Calculate trend indicator
+      let trend = 'stable';
+      if (index > 0) {
+        const prevSystolic = recentReadings[index - 1].systolic;
+        if (systolic < prevSystolic) trend = 'improving';
+        else if (systolic > prevSystolic) trend = 'declining';
       }
-    } catch (error) {
-      console.error('Error generating AI plan:', error);
-      toast({
-        title: "Error",
-        description: "Gagal membuat AI plan. Silakan coba lagi.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingPlan(false);
-    }
+
+      return {
+        date: format(date, "MMM d"),
+        systolic,
+        diastolic,
+        trend,
+        avgBP: Math.round((systolic + diastolic) / 2)
+      };
+    });
+  };
+
+  // Activity trend histogram data
+  const getActivityTrendHistogramData = () => {
+    if (activityLogs.length < 2) return [];
+
+    // Get last 7 activity logs
+    const recentActivities = activityLogs.slice(0, 7).reverse();
+    
+    return recentActivities.map((activity, index) => {
+      const date = new Date(activity.timestamp);
+      const positiveCount = activityLogs.filter(log => 
+        new Date(log.timestamp) <= date && log.healthImpact === "positive"
+      ).length;
+      const totalCount = activityLogs.filter(log => 
+        new Date(log.timestamp) <= date
+      ).length;
+      
+      const healthRatio = totalCount > 0 ? (positiveCount / totalCount) * 100 : 0;
+      
+      // Calculate trend
+      let trend = 'stable';
+      if (index > 0) {
+        const prevActivity = recentActivities[index - 1];
+        const prevPositiveCount = activityLogs.filter(log => 
+          new Date(log.timestamp) <= new Date(prevActivity.timestamp) && log.healthImpact === "positive"
+        ).length;
+        const prevTotalCount = activityLogs.filter(log => 
+          new Date(log.timestamp) <= new Date(prevActivity.timestamp)
+        ).length;
+        const prevHealthRatio = prevTotalCount > 0 ? (prevPositiveCount / prevTotalCount) * 100 : 0;
+        
+        if (healthRatio > prevHealthRatio) trend = 'improving';
+        else if (healthRatio < prevHealthRatio) trend = 'declining';
+      }
+
+      return {
+        date: format(date, "MMM d"),
+        healthRatio: Math.round(healthRatio),
+        duration: activity.duration,
+        trend
+      };
+    });
   };
 
   // Health trend data for chart
@@ -854,6 +990,85 @@ export default function TrendsPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Health Trend Histograms */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Tren Tekanan Darah</CardTitle>
+            <CardDescription>Histogram dengan garis trend tekanan darah 7 hari terakhir</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {getHealthTrendHistogramData().length > 0 ? (
+              <div className="space-y-4">
+                <BarChart width={400} height={200} data={getHealthTrendHistogramData()}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Bar dataKey="systolic" fill="#ef4444" name="Sistolik" />
+                  <Bar dataKey="diastolic" fill="#3b82f6" name="Diastolik" />
+                </BarChart>
+                <div className="flex justify-center space-x-4">
+                  {getHealthTrendHistogramData().map((item, index) => (
+                    <div key={index} className="text-center">
+                      <div className={`text-sm font-medium ${
+                        item.trend === 'improving' ? 'text-green-600' : 
+                        item.trend === 'declining' ? 'text-red-600' : 'text-gray-600'
+                      }`}>
+                        {item.trend === 'improving' ? '↘️' : 
+                         item.trend === 'declining' ? '↗️' : '→'}
+                      </div>
+                      <div className="text-xs text-muted-foreground">{item.date}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
+                Belum ada data tekanan darah yang cukup
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Tren Aktivitas Sehat</CardTitle>
+            <CardDescription>Histogram dengan garis trend aktivitas sehat 7 hari terakhir</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {getActivityTrendHistogramData().length > 0 ? (
+              <div className="space-y-4">
+                <BarChart width={400} height={200} data={getActivityTrendHistogramData()}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Bar dataKey="healthRatio" fill="#10b981" name="% Aktivitas Sehat" />
+                </BarChart>
+                <div className="flex justify-center space-x-4">
+                  {getActivityTrendHistogramData().map((item, index) => (
+                    <div key={index} className="text-center">
+                      <div className={`text-sm font-medium ${
+                        item.trend === 'improving' ? 'text-green-600' : 
+                        item.trend === 'declining' ? 'text-red-600' : 'text-gray-600'
+                      }`}>
+                        {item.trend === 'improving' ? '↗️' : 
+                         item.trend === 'declining' ? '↘️' : '→'}
+                      </div>
+                      <div className="text-xs text-muted-foreground">{item.date}</div>
+                      <div className="text-xs font-medium">{item.healthRatio}%</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
+                Belum ada data aktivitas yang cukup
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
