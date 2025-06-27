@@ -46,13 +46,21 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Flame, Loader2, Sparkles, CheckCircle, AlertTriangle, Minus } from "lucide-react";
 
 const activityLogSchema = z.object({
-  steps: z.coerce.number().min(0, "Langkah harus positif.").max(100000, "Langkah terlalu banyak."),
+  steps: z.coerce.number(),
   duration: z.coerce.number().min(0, "Durasi harus positif.").max(1440, "Durasi terlalu lama."),
   activityType: z.string().min(1, "Pilih jenis aktivitas."),
   description: z.string().min(10, "Jelaskan aktivitas minimal 10 karakter."),
   intensity: z.enum(["low", "medium", "high"]),
   healthConditions: z.string().optional(),
   lifestyleFactors: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.activityType === "walking" && data.steps <= 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Jumlah langkah harus diisi jika memilih Jalan Kaki.",
+      path: ["steps"],
+    });
+  }
 });
 
 const activityTypes = [
@@ -70,6 +78,8 @@ const activityTypes = [
   { value: "other", label: "Lainnya", impact: "neutral" },
 ];
 
+type ActivityFormType = z.infer<typeof activityLogSchema>;
+
 export default function ActivityPage() {
   const { user } = useAuth();
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
@@ -79,7 +89,7 @@ export default function ActivityPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof activityLogSchema>>({
+  const form = useForm<ActivityFormType>({
     resolver: zodResolver(activityLogSchema),
     defaultValues: { 
       steps: 0, 
@@ -130,6 +140,15 @@ export default function ActivityPage() {
     };
   }, [user]);
 
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "activityType" && value.activityType !== "walking" && value.steps !== 0) {
+        form.setValue("steps", 0);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   const getActivityStatus = (activityType: string, intensity: string) => {
     const activity = activityTypes.find(a => a.value === activityType);
     if (!activity) return { text: "Tidak Diketahui", color: "text-gray-500", icon: Minus };
@@ -143,7 +162,7 @@ export default function ActivityPage() {
     }
   };
 
-  const onSubmit = async (values: z.infer<typeof activityLogSchema>) => {
+  const onSubmit = async (values: ActivityFormType) => {
     if (!user || !db) return;
     if (values.steps === 0 && values.duration === 0) {
       form.setError("steps", { message: "Harap isi langkah atau durasi." });
