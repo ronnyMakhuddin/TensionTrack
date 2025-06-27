@@ -1,0 +1,12 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#0f172a"/>
+  
+  <!-- TensionTrack text -->
+  <text x="256" y="280" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="48" font-weight="bold">Tension</text>
+  <text x="256" y="340" text-anchor="middle" fill="#ef4444" font-family="Arial, sans-serif" font-size="48" font-weight="bold">Track</text>
+  
+  <!-- Heart icon from the app (scaled up) -->
+  <path d="M256 128c49.83-48.67 100-106.67 100-183.33A183.33 183.33 0 0 0 172.67-128c-58.67 0-100 16.67-150 66.67-50-50-91.33-66.67-150-66.67A183.33 183.33 0 0 0-128-55.33c0 76.66 50.17 134.66 100 183.33l233.33 233.33Z" fill="#ef4444"/>
+  <path d="M74.67 170.67h209.33l23.33-50L350 298.67l23.33-50h126.67" stroke="#ffffff" stroke-width="33.33" fill="none"/>
+</svg> 

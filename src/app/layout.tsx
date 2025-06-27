@@ -6,6 +6,26 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "TensionTrack",
   description: "Aplikasi ramah untuk membantu Anda mengelola hipertensi dan meningkatkan gaya hidup Anda.",
+  icons: {
+    icon: [
+      {
+        url: "/favicon.svg",
+        type: "image/svg+xml",
+      },
+      {
+        url: "/favicon.ico",
+        sizes: "any",
+      },
+    ],
+    apple: [
+      {
+        url: "/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
