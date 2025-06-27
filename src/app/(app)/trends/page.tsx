@@ -576,28 +576,31 @@ Minggu 4: Konsolidasi dan evaluasi progress
         <Card>
           <CardHeader>
             <CardTitle>Tren Aktivitas</CardTitle>
-            <CardDescription>Menampilkan aktivitas 7 hari terakhir.</CardDescription>
+            <CardDescription>Grafik garis aktivitas 7 hari terakhir.</CardDescription>
           </CardHeader>
           <CardContent>
             {activityChartData.length > 0 ? (
-              <ChartContainer config={activityChartConfig} className="min-h-[200px] w-full">
-                <BarChart accessibilityLayer data={activityChartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="date"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent indicator="dot" />}
-                  />
-                  <ChartLegend content={<ChartLegendContent />} />
-                  <Bar dataKey="steps" fill="var(--color-steps)" radius={4} />
-                  <Bar dataKey="duration" fill="var(--color-duration)" radius={4} />
-                </BarChart>
-              </ChartContainer>
+              <LineChart width={400} height={200} data={activityChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Line 
+                  type="monotone" 
+                  dataKey="steps" 
+                  stroke="#3b82f6" 
+                  strokeWidth={2}
+                  name="Langkah"
+                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="duration" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  name="Durasi (menit)"
+                  dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                />
+              </LineChart>
             ) : (
               <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
                 Catat aktivitas pertama Anda untuk melihat grafik.
@@ -608,27 +611,23 @@ Minggu 4: Konsolidasi dan evaluasi progress
          <Card>
           <CardHeader>
             <CardTitle>Tren Tidur</CardTitle>
-            <CardDescription>Menampilkan data tidur 7 hari terakhir.</CardDescription>
+            <CardDescription>Grafik garis data tidur 7 hari terakhir.</CardDescription>
           </CardHeader>
           <CardContent>
             {sleepChartData.length > 0 ? (
-              <ChartContainer config={sleepChartConfig} className="min-h-[200px] w-full">
-                <BarChart accessibilityLayer data={sleepChartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="date"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent indicator="dot" />}
-                  />
-                  <ChartLegend content={<ChartLegendContent />} />
-                  <Bar dataKey="duration" fill="var(--color-duration)" radius={4} />
-                </BarChart>
-              </ChartContainer>
+              <LineChart width={400} height={200} data={sleepChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Line 
+                  type="monotone" 
+                  dataKey="duration" 
+                  stroke="#8b5cf6" 
+                  strokeWidth={2}
+                  name="Durasi (jam)"
+                  dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
+                />
+              </LineChart>
             ) : (
               <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
                 Catat data tidur pertama Anda untuk melihat grafik.
@@ -639,27 +638,31 @@ Minggu 4: Konsolidasi dan evaluasi progress
         <Card>
           <CardHeader>
             <CardTitle>Tren Latihan</CardTitle>
-            <CardDescription>Menampilkan data latihan 7 hari terakhir.</CardDescription>
+            <CardDescription>Grafik garis data latihan 7 hari terakhir.</CardDescription>
           </CardHeader>
           <CardContent>
             {exerciseChartData.length > 0 ? (
-              <ChartContainer config={exerciseChartConfig} className="min-h-[200px] w-full">
-                <BarChart accessibilityLayer data={exerciseChartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="date"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent indicator="dot" />}
-                  />
-                  <ChartLegend content={<ChartLegendContent />} />
-                  <Bar dataKey="duration" fill="var(--color-duration)" radius={4} />
-                </BarChart>
-              </ChartContainer>
+              <LineChart width={400} height={200} data={exerciseChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Line 
+                  type="monotone" 
+                  dataKey="duration" 
+                  stroke="#f59e0b" 
+                  strokeWidth={2}
+                  name="Durasi (menit)"
+                  dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="pulse" 
+                  stroke="#ef4444" 
+                  strokeWidth={2}
+                  name="Detak Jantung (BPM)"
+                  dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
+                />
+              </LineChart>
             ) : (
               <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
                 Catat latihan pertama Anda untuk melihat grafik.
@@ -996,18 +999,32 @@ Minggu 4: Konsolidasi dan evaluasi progress
         <Card>
           <CardHeader>
             <CardTitle>Tren Tekanan Darah</CardTitle>
-            <CardDescription>Histogram dengan garis trend tekanan darah 7 hari terakhir</CardDescription>
+            <CardDescription>Grafik garis tren tekanan darah 7 hari terakhir</CardDescription>
           </CardHeader>
           <CardContent>
             {getHealthTrendHistogramData().length > 0 ? (
               <div className="space-y-4">
-                <BarChart width={400} height={200} data={getHealthTrendHistogramData()}>
+                <LineChart width={400} height={200} data={getHealthTrendHistogramData()}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
-                  <Bar dataKey="systolic" fill="#ef4444" name="Sistolik" />
-                  <Bar dataKey="diastolic" fill="#3b82f6" name="Diastolik" />
-                </BarChart>
+                  <Line 
+                    type="monotone" 
+                    dataKey="systolic" 
+                    stroke="#ef4444" 
+                    strokeWidth={2}
+                    name="Sistolik"
+                    dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="diastolic" 
+                    stroke="#3b82f6" 
+                    strokeWidth={2}
+                    name="Diastolik"
+                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                  />
+                </LineChart>
                 <div className="flex justify-center space-x-4">
                   {getHealthTrendHistogramData().map((item, index) => (
                     <div key={index} className="text-center">
@@ -1019,6 +1036,7 @@ Minggu 4: Konsolidasi dan evaluasi progress
                          item.trend === 'declining' ? '↗️' : '→'}
                       </div>
                       <div className="text-xs text-muted-foreground">{item.date}</div>
+                      <div className="text-xs font-medium">{item.systolic}/{item.diastolic}</div>
                     </div>
                   ))}
                 </div>
@@ -1034,17 +1052,24 @@ Minggu 4: Konsolidasi dan evaluasi progress
         <Card>
           <CardHeader>
             <CardTitle>Tren Aktivitas Sehat</CardTitle>
-            <CardDescription>Histogram dengan garis trend aktivitas sehat 7 hari terakhir</CardDescription>
+            <CardDescription>Grafik garis tren aktivitas sehat 7 hari terakhir</CardDescription>
           </CardHeader>
           <CardContent>
             {getActivityTrendHistogramData().length > 0 ? (
               <div className="space-y-4">
-                <BarChart width={400} height={200} data={getActivityTrendHistogramData()}>
+                <LineChart width={400} height={200} data={getActivityTrendHistogramData()}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
-                  <Bar dataKey="healthRatio" fill="#10b981" name="% Aktivitas Sehat" />
-                </BarChart>
+                  <Line 
+                    type="monotone" 
+                    dataKey="healthRatio" 
+                    stroke="#10b981" 
+                    strokeWidth={2}
+                    name="% Aktivitas Sehat"
+                    dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                  />
+                </LineChart>
                 <div className="flex justify-center space-x-4">
                   {getActivityTrendHistogramData().map((item, index) => (
                     <div key={index} className="text-center">
