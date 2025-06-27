@@ -16,6 +16,10 @@ export interface ActivityLog {
   id: string;
   steps: number;
   duration: number; // in minutes
+  activityType?: string; // jenis aktivitas (olahraga, merokok, minum alkohol, dll)
+  description?: string; // deskripsi aktivitas
+  healthImpact?: 'positive' | 'negative' | 'neutral'; // dampak kesehatan
+  intensity?: 'low' | 'medium' | 'high'; // intensitas aktivitas
   timestamp: string; // ISO string
 }
 
