@@ -4,8 +4,8 @@ import { AuthProvider } from "@/hooks/use-auth";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TensionTrack",
-  description: "Aplikasi ramah untuk membantu Anda mengelola hipertensi dan meningkatkan gaya hidup Anda.",
+  title: "TensionTrack - Smart Hypertension Management",
+  description: "Aplikasi pintar untuk manajemen hipertensi dengan AI-powered advice, tracking komprehensif, dan konsultasi Ners Counselor. Pantau tekanan darah, aktivitas, tidur, latihan, dan diet dengan analisis tren kesehatan real-time.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

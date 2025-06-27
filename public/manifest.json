@@ -1,7 +1,7 @@
 {
-  "name": "TensionTrack",
+  "name": "TensionTrack - Smart Hypertension Management",
   "short_name": "TensionTrack",
-  "description": "Aplikasi ramah untuk membantu Anda mengelola hipertensi dan meningkatkan gaya hidup Anda.",
+  "description": "Aplikasi pintar untuk manajemen hipertensi dengan AI-powered advice, tracking komprehensif, dan konsultasi Ners Counselor. Pantau tekanan darah, aktivitas, tidur, latihan, dan diet dengan analisis tren kesehatan real-time.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -21,6 +21,6 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["health", "medical", "lifestyle"],
+  "categories": ["health", "medical", "lifestyle", "fitness", "productivity"],
   "lang": "id"
 } 

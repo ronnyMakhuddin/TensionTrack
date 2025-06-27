@@ -1,17 +1,42 @@
-# 🩺 TensionTrack - Aplikasi Manajemen Hipertensi
+# 🩺 TensionTrack - Smart Hypertension Management
 
-Aplikasi web modern untuk membantu penderita hipertensi mengelola kondisi mereka dengan fitur tracking tekanan darah, edukasi, dan saran personalisasi.
+Aplikasi web modern dan pintar untuk manajemen hipertensi dengan AI-powered advice, tracking komprehensif, dan konsultasi Ners Counselor. Pantau tekanan darah, aktivitas, tidur, latihan, dan diet dengan analisis tren kesehatan real-time.
 
 ## ✨ Fitur Utama
 
-- 📊 **Tracking Tekanan Darah** - Catat dan monitor tekanan darah harian
-- 🍎 **Manajemen Diet** - Log makanan dan resep sehat
-- 🏃‍♂️ **Aktivitas Fisik** - Video latihan dan tracking aktivitas
-- 🧘‍♀️ **Relaksasi** - Audio meditasi dan teknik relaksasi
-- 📚 **Edukasi** - Materi pembelajaran dan kuis interaktif
-- 💊 **Reminder Obat** - Pengingat jadwal minum obat
-- 🤖 **AI Advice** - Saran personalisasi berbasis AI
-- 📱 **Responsive Design** - Optimal di desktop dan mobile
+### 📊 **Health Tracking Komprehensif**
+- **Tekanan Darah** - Tracking harian dengan klasifikasi otomatis
+- **Aktivitas Fisik** - Support berbagai aktivitas termasuk kebiasaan tidak sehat
+- **Pola Tidur** - Monitoring durasi dan kualitas tidur
+- **Latihan Fisik** - Tracking latihan dengan kondisi fisik
+- **Diet & Nutrisi** - Log makanan dan resep sehat
+- **Profil Pasien** - Data lengkap untuk konsultasi
+
+### 🤖 **AI-Powered Features**
+- **Personalized Advice** - Saran personal berdasarkan data kesehatan
+- **Behavior Change Plan** - Plan perubahan perilaku 30 hari
+- **Activity Assessment** - Analisis dampak aktivitas terhadap kesehatan
+- **Sleep Optimization** - Rekomendasi perbaikan pola tidur
+- **Diet Feedback** - Saran nutrisi untuk hipertensi
+
+### 📈 **Analytics & Reports**
+- **Health Score** - Skor kesehatan komprehensif (0-100%)
+- **Trend Analysis** - Grafik garis tren kesehatan real-time
+- **Nurse Report** - Laporan lengkap untuk Ners Counselor
+- **PDF Export** - Export laporan kesehatan
+- **WhatsApp Integration** - Sharing laporan via WhatsApp
+
+### 🏥 **Healthcare Integration**
+- **Ners Counselor Consultation** - Konsultasi via WhatsApp
+- **Medical Profile** - Data medis lengkap pasien
+- **Medication Reminders** - Pengingat obat yang fleksibel
+- **Emergency Contacts** - Kontak darurat
+
+### 🎯 **User Experience**
+- **Responsive Design** - Optimal di desktop dan mobile
+- **Real-time Updates** - Data sinkron real-time
+- **Interactive Charts** - Visualisasi data yang informatif
+- **Intuitive UI** - Interface yang mudah digunakan
 
 ## 🚀 Deployment Cepat
 
@@ -63,6 +88,12 @@ Buat file `.env.local`:
 NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+
+# Google AI (Genkit) - untuk fitur AI
+GOOGLE_AI_API_KEY=your_google_ai_key
 ```
 
 ## 📁 Struktur Project
@@ -71,11 +102,25 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
 src/
 ├── app/                 # Next.js App Router
 │   ├── (app)/          # Protected routes
-│   └── (auth)/         # Auth pages
+│   │   ├── activity/   # Activity tracking
+│   │   ├── advice/     # AI advice
+│   │   ├── consultation/ # Nurse consultation
+│   │   ├── diet/       # Diet management
+│   │   ├── education/  # Health education
+│   │   ├── exercises/  # Exercise tracking
+│   │   ├── profile/    # Patient profile
+│   │   ├── recipes/    # Healthy recipes
+│   │   ├── relaxation/ # Relaxation techniques
+│   │   ├── reminders/  # Medication reminders
+│   │   ├── sleep/      # Sleep tracking
+│   │   └── trends/     # Health analytics
+│   ├── (auth)/         # Auth pages
+│   └── api/            # API routes
 ├── components/          # Reusable components
 ├── lib/                # Utilities & config
 ├── hooks/              # Custom hooks
 └── ai/                 # AI flows & prompts
+    └── flows/          # AI behavior flows
 ```
 
 ## 🎨 Tech Stack
@@ -84,17 +129,32 @@ src/
 - **Styling**: Tailwind CSS + shadcn/ui
 - **Database**: Firebase Firestore
 - **Authentication**: Firebase Auth
-- **AI**: Google AI (Genkit)
-- **Charts**: Recharts
+- **AI**: Google AI (Genkit) + Gemini Pro
+- **Charts**: Recharts (Line Charts, Pie Charts)
 - **Icons**: Lucide React
+- **Forms**: React Hook Form + Zod
+- **State Management**: React Hooks + Context
 
 ## 📱 Screenshots
 
-- Dashboard dengan tracking tekanan darah
-- Menu edukasi dengan kuis interaktif
-- Resep sehat dengan gambar
-- Video latihan fisik
-- Audio relaksasi
+- Dashboard dengan health score dan trend analysis
+- AI-powered behavior change plan
+- Comprehensive health tracking
+- Nurse consultation interface
+- Real-time health analytics
+- Patient profile management
+
+## 🆕 Fitur Terbaru
+
+### v1.0.0 - Smart Hypertension Management
+- ✅ AI-powered personalized advice
+- ✅ Comprehensive health tracking
+- ✅ Real-time trend analysis
+- ✅ Nurse consultation integration
+- ✅ Behavior change planning
+- ✅ Patient profile management
+- ✅ PDF health reports
+- ✅ WhatsApp integration
 
 ## 🤝 Contributing
 
