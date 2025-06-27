@@ -3,7 +3,8 @@ export interface BloodPressureReading {
   systolic: number;
   diastolic: number;
   pulse: number;
-  timestamp: string; // ISO string
+  timestamp: string;
+  notes?: string;
 }
 
 export interface FoodLog {
