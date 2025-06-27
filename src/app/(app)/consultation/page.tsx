@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/lib/firebase";
 import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
-import type { BloodPressureReading, FoodLog, ActivityLog, SleepLog } from "@/lib/types";
+import type { BloodPressureReading, FoodLog, ActivityLog, SleepLog, ExerciseLog } from "@/lib/types";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,18 +39,21 @@ export default function ConsultationPage() {
       const foodQuery = query(collection(db, "users", user.uid, "food"), orderBy("timestamp", "desc"), limit(10));
       const activityQuery = query(collection(db, "users", user.uid, "activity"), orderBy("timestamp", "desc"), limit(10));
       const sleepQuery = query(collection(db, "users", user.uid, "sleep"), orderBy("timestamp", "desc"), limit(7));
+      const exerciseQuery = query(collection(db, "users", user.uid, "exercises"), orderBy("timestamp", "desc"), limit(10));
       
-      const [bpSnapshot, foodSnapshot, activitySnapshot, sleepSnapshot] = await Promise.all([
+      const [bpSnapshot, foodSnapshot, activitySnapshot, sleepSnapshot, exerciseSnapshot] = await Promise.all([
           getDocs(bpQuery),
           getDocs(foodQuery),
           getDocs(activityQuery),
-          getDocs(sleepQuery)
+          getDocs(sleepQuery),
+          getDocs(exerciseQuery)
       ]);
 
       const bpReadings = bpSnapshot.docs.map(d => d.data() as BloodPressureReading);
       const foodLogs = foodSnapshot.docs.map(d => d.data() as FoodLog);
       const activityLogs = activitySnapshot.docs.map(d => d.data() as ActivityLog);
       const sleepLogs = sleepSnapshot.docs.map(d => d.data() as SleepLog);
+      const exerciseLogs = exerciseSnapshot.docs.map(d => d.data() as ExerciseLog);
       
       let reportContent = "LAPORAN KESEHATAN KOMPREHENSIF\n";
       reportContent += "===================================\n";
@@ -159,6 +162,35 @@ export default function ConsultationPage() {
       }
       reportContent += "\n";
 
+      // Data Latihan
+      reportContent += "💪 RIWAYAT LATIHAN (10 hari terakhir)\n";
+      reportContent += "--------------------------------\n";
+      if (exerciseLogs.length > 0) {
+        const avgDuration = exerciseLogs.reduce((sum, log) => sum + log.duration, 0) / exerciseLogs.length;
+        const avgPulse = exerciseLogs.reduce((sum, log) => sum + log.pulse, 0) / exerciseLogs.length;
+        
+        reportContent += `Rata-rata durasi latihan: ${avgDuration.toFixed(1)} menit\n`;
+        reportContent += `Rata-rata detak jantung setelah latihan: ${avgPulse.toFixed(0)} BPM\n`;
+        reportContent += "\n";
+        
+        exerciseLogs.forEach((log, index) => {
+          const date = format(new Date(log.timestamp), "dd/MM/yyyy HH:mm");
+          const difficulty = log.difficulty === "easy" ? "Mudah" : log.difficulty === "medium" ? "Sedang" : "Sulit";
+          const breathing = log.breathing === "normal" ? "Normal" : log.breathing === "cepat" ? "Cepat" : "Lambat";
+          
+          reportContent += `${index + 1}. ${date}: ${log.exerciseTitle}\n`;
+          reportContent += `   Durasi: ${log.duration} menit\n`;
+          reportContent += `   Detak jantung: ${log.pulse} BPM\n`;
+          reportContent += `   Pernapasan: ${breathing}\n`;
+          reportContent += `   Tingkat kesulitan: ${difficulty}\n`;
+          if (log.notes) reportContent += `   Catatan: ${log.notes}\n`;
+          reportContent += "\n";
+        });
+      } else {
+        reportContent += "Tidak ada data latihan yang tercatat.\n";
+      }
+      reportContent += "\n";
+
       // Analisis Pola
       reportContent += "📈 ANALISIS POLA KESEHATAN\n";
       reportContent += "---------------------------\n";
@@ -188,6 +220,19 @@ export default function ConsultationPage() {
         reportContent += `• Tidur kurang/berlebihan: ${poorSleepCount} dari ${sleepLogs.length} hari\n`;
       }
       
+      // Analisis latihan
+      if (exerciseLogs.length > 0) {
+        const avgDuration = exerciseLogs.reduce((sum, log) => sum + log.duration, 0) / exerciseLogs.length;
+        const avgPulse = exerciseLogs.reduce((sum, log) => sum + log.pulse, 0) / exerciseLogs.length;
+        const normalBreathingCount = exerciseLogs.filter(log => log.breathing === "normal").length;
+        const breathingIssuesCount = exerciseLogs.length - normalBreathingCount;
+        
+        reportContent += `• Rata-rata durasi latihan: ${avgDuration.toFixed(1)} menit\n`;
+        reportContent += `• Rata-rata detak jantung setelah latihan: ${avgPulse.toFixed(0)} BPM\n`;
+        reportContent += `• Pernapasan normal: ${normalBreathingCount} dari ${exerciseLogs.length} sesi\n`;
+        reportContent += `• Masalah pernapasan: ${breathingIssuesCount} dari ${exerciseLogs.length} sesi\n`;
+      }
+      
       reportContent += "\n";
 
       // Rekomendasi Umum
@@ -195,6 +240,7 @@ export default function ConsultationPage() {
       reportContent += "-------------------\n";
       reportContent += "• Lakukan pengukuran tekanan darah secara rutin\n";
       reportContent += "• Tingkatkan aktivitas fisik yang sehat\n";
+      reportContent += "• Lakukan latihan terpandu secara teratur\n";
       reportContent += "• Kurangi aktivitas yang berdampak negatif\n";
       reportContent += "• Pertahankan pola tidur yang teratur\n";
       reportContent += "• Konsultasikan dengan Ners Counselor untuk evaluasi lebih lanjut\n\n";
