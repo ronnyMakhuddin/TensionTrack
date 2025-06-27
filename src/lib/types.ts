@@ -41,9 +41,15 @@ export interface Reminder {
   id: string;
   title: string;
   type: 'medication' | 'measurement' | 'activity';
-  time: string; // HH:mm
-  days: number[]; // 0-6 for Sun-Sat
+  frequency?: 'once' | 'multiple';
+  time?: string; // untuk backward compatibility
+  times?: string[]; // untuk multiple times
+  interval?: number; // interval dalam jam untuk multiple times
+  days: number[];
   enabled: boolean;
+  dosage?: string; // dosis obat
+  notes?: string; // catatan tambahan
+  createdAt?: string;
 }
 
 export interface UserProfile {
