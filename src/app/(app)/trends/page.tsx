@@ -1003,105 +1003,12 @@ Minggu 4: Konsolidasi dan evaluasi progress
       </div>
 
       {/* Health Trend Histograms */}
+      {/* Dihapus: Chart tren tekanan darah dan aktivitas sehat manual, hanya tampilkan satu chart utama per kategori */}
+      {/*
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Tren Tekanan Darah</CardTitle>
-            <CardDescription>Grafik garis tren tekanan darah 7 hari terakhir</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {getHealthTrendHistogramData().length > 0 ? (
-              <div className="space-y-4">
-                <LineChart width={400} height={200} data={getHealthTrendHistogramData()}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Line 
-                    type="monotone" 
-                    dataKey="systolic" 
-                    stroke="#ef4444" 
-                    strokeWidth={2}
-                    name="Sistolik"
-                    dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="diastolic" 
-                    stroke="#3b82f6" 
-                    strokeWidth={2}
-                    name="Diastolik"
-                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                  />
-                </LineChart>
-                <div className="flex justify-center space-x-4">
-                  {getHealthTrendHistogramData().map((item, index) => (
-                    <div key={index} className="text-center">
-                      <div className={`text-sm font-medium ${
-                        item.trend === 'improving' ? 'text-green-600' : 
-                        item.trend === 'declining' ? 'text-red-600' : 'text-gray-600'
-                      }`}>
-                        {item.trend === 'improving' ? '↘️' : 
-                         item.trend === 'declining' ? '↗️' : '→'}
-                      </div>
-                      <div className="text-xs text-muted-foreground">{item.date}</div>
-                      <div className="text-xs font-medium">{item.systolic}/{item.diastolic}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
-                Belum ada data tekanan darah yang cukup
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Tren Aktivitas Sehat</CardTitle>
-            <CardDescription>Grafik garis tren aktivitas sehat 7 hari terakhir</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {getActivityTrendHistogramData().length > 0 ? (
-              <div className="space-y-4">
-                <LineChart width={400} height={200} data={getActivityTrendHistogramData()}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Line 
-                    type="monotone" 
-                    dataKey="healthRatio" 
-                    stroke="#10b981" 
-                    strokeWidth={2}
-                    name="% Aktivitas Sehat"
-                    dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-                  />
-                </LineChart>
-                <div className="flex justify-center space-x-4">
-                  {getActivityTrendHistogramData().map((item, index) => (
-                    <div key={index} className="text-center">
-                      <div className={`text-sm font-medium ${
-                        item.trend === 'improving' ? 'text-green-600' : 
-                        item.trend === 'declining' ? 'text-red-600' : 'text-gray-600'
-                      }`}>
-                        {item.trend === 'improving' ? '↗️' : 
-                         item.trend === 'declining' ? '↘️' : '→'}
-                      </div>
-                      <div className="text-xs text-muted-foreground">{item.date}</div>
-                      <div className="text-xs font-medium">{item.healthRatio}%</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
-                Belum ada data aktivitas yang cukup
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        ...
       </div>
+      */}
 
       {/* Blood Pressure History Table */}
       <Card>
