@@ -220,6 +220,8 @@ export default function TrendsPage() {
     .map((r) => ({
       ...r,
       date: format(new Date(r.timestamp), "MMM d"),
+      activityName: r.activityType || r.description || 'Aktivitas',
+      tooltipText: `${r.activityType || r.description || 'Aktivitas'} - ${r.duration} menit`
     }));
 
   const sleepChartData = [...sleepLogs]
@@ -228,6 +230,7 @@ export default function TrendsPage() {
     .map((r) => ({
       ...r,
       date: format(new Date(r.timestamp), "MMM d"),
+      tooltipText: `${r.duration} jam tidur${r.quality ? ` - ${r.quality}` : ''}`
     }));
 
   const exerciseChartData = [...exerciseLogs]
@@ -236,6 +239,8 @@ export default function TrendsPage() {
     .map((r) => ({
       ...r,
       date: format(new Date(r.timestamp), "MMM d"),
+      exerciseName: r.exerciseTitle || 'Latihan',
+      tooltipText: `${r.exerciseTitle || 'Latihan'} - ${r.duration} menit - ${r.breathing}`
     }));
 
   // Generate AI plan for behavior change
@@ -872,159 +877,130 @@ Minggu 4: Konsolidasi dan evaluasi progress
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Riwayat Bacaan Tekanan Darah</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[150px]">Tanggal</TableHead>
-                <TableHead className="w-[100px]">Waktu</TableHead>
-                <TableHead>Sistolik</TableHead>
-                <TableHead>Diastolik</TableHead>
-                <TableHead>Denyut Nadi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {bpReadings.length > 0 ? (
-                bpReadings.map((reading) => (
-                  <TableRow key={reading.id}>
-                    <TableCell className="font-medium">{reading.timestamp && format(new Date(reading.timestamp), "MMM d, yyyy")}</TableCell>
-                    <TableCell>{reading.timestamp && format(new Date(reading.timestamp), "p")}</TableCell>
-                    <TableCell>{reading.systolic} mmHg</TableCell>
-                    <TableCell>{reading.diastolic} mmHg</TableCell>
-                    <TableCell>{reading.pulse} BPM</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
-                    Tidak ada bacaan ditemukan.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Riwayat Aktivitas</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[150px]">Tanggal</TableHead>
-                <TableHead className="w-[100px]">Waktu</TableHead>
-                <TableHead>Langkah</TableHead>
-                <TableHead>Durasi (menit)</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {activityLogs.length > 0 ? (
-                activityLogs.map((log) => (
-                  <TableRow key={log.id}>
-                    <TableCell className="font-medium">{log.timestamp && format(new Date(log.timestamp), "MMM d, yyyy")}</TableCell>
-                    <TableCell>{log.timestamp && format(new Date(log.timestamp), "p")}</TableCell>
-                    <TableCell>{log.steps.toLocaleString()} langkah</TableCell>
-                    <TableCell>{log.duration} menit</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
-                    Tidak ada aktivitas ditemukan.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-       <Card>
-        <CardHeader>
-          <CardTitle>Riwayat Tidur</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[150px]">Tanggal</TableHead>
-                <TableHead>Durasi (jam)</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sleepLogs.length > 0 ? (
-                sleepLogs.map((log) => (
-                  <TableRow key={log.id}>
-                    <TableCell className="font-medium">{log.timestamp && format(new Date(log.timestamp), "MMM d, yyyy")}</TableCell>
-                    <TableCell>{log.duration.toFixed(1)} jam</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={2} className="h-24 text-center">
-                    Tidak ada data tidur ditemukan.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Riwayat Latihan</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[150px]">Tanggal</TableHead>
-                <TableHead className="w-[100px]">Waktu</TableHead>
-                <TableHead>Latihan</TableHead>
-                <TableHead>Durasi (menit)</TableHead>
-                <TableHead>Detak Jantung</TableHead>
-                <TableHead>Pernapasan</TableHead>
-                <TableHead>Kesulitan</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {exerciseLogs.length > 0 ? (
-                exerciseLogs.map((log) => (
-                  <TableRow key={log.id}>
-                    <TableCell className="font-medium">{log.timestamp && format(new Date(log.timestamp), "MMM d, yyyy")}</TableCell>
-                    <TableCell>{log.timestamp && format(new Date(log.timestamp), "p")}</TableCell>
-                    <TableCell>{log.exerciseTitle}</TableCell>
-                    <TableCell>{log.duration} menit</TableCell>
-                    <TableCell>{log.pulse} BPM</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {log.breathing === "normal" ? "Normal" : log.breathing === "cepat" ? "Cepat" : "Lambat"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {log.difficulty === "easy" ? "Mudah" : log.difficulty === "medium" ? "Sedang" : "Sulit"}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
-                    Tidak ada data latihan ditemukan.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      {/* Activity and Exercise History Tables */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Riwayat Aktivitas</CardTitle>
+            <CardDescription>Daftar aktivitas 7 hari terakhir</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {activityLogs.length > 0 ? (
+              <div className="space-y-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tanggal</TableHead>
+                      <TableHead>Aktivitas</TableHead>
+                      <TableHead>Durasi</TableHead>
+                      <TableHead>Dampak</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {activityLogs.slice(0, 7).map((activity) => (
+                      <TableRow key={activity.id}>
+                        <TableCell className="font-medium">
+                          {format(new Date(activity.timestamp), "dd/MM/yyyy")}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">
+                              {activity.activityType || activity.description || 'Aktivitas'}
+                            </div>
+                            {activity.description && activity.activityType && (
+                              <div className="text-sm text-muted-foreground">
+                                {activity.description}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>{activity.duration} menit</TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            activity.healthImpact === "positive" ? "default" :
+                            activity.healthImpact === "negative" ? "destructive" : "secondary"
+                          }>
+                            {activity.healthImpact === "positive" ? "Sehat" :
+                             activity.healthImpact === "negative" ? "Tidak Sehat" : "Netral"}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
+                Belum ada data aktivitas
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Riwayat Latihan</CardTitle>
+            <CardDescription>Daftar latihan 7 hari terakhir</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {exerciseLogs.length > 0 ? (
+              <div className="space-y-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tanggal</TableHead>
+                      <TableHead>Latihan</TableHead>
+                      <TableHead>Durasi</TableHead>
+                      <TableHead>Kondisi</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {exerciseLogs.slice(0, 7).map((exercise) => (
+                      <TableRow key={exercise.id}>
+                        <TableCell className="font-medium">
+                          {format(new Date(exercise.timestamp), "dd/MM/yyyy")}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">
+                              {exercise.exerciseTitle || 'Latihan'}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {exercise.notes}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{exercise.duration} menit</TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="text-sm">
+                              Detak: {exercise.pulse} BPM
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              Nafas: {exercise.breathing}
+                            </div>
+                            <Badge variant={
+                              exercise.difficulty === "easy" ? "default" :
+                              exercise.difficulty === "medium" ? "secondary" : "destructive"
+                            }>
+                              {exercise.difficulty === "easy" ? "Mudah" :
+                               exercise.difficulty === "medium" ? "Sedang" : "Sulit"}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
+                Belum ada data latihan
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Health Trend Histograms */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1126,6 +1102,79 @@ Minggu 4: Konsolidasi dan evaluasi progress
           </CardContent>
         </Card>
       </div>
+
+      {/* Blood Pressure History Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Riwayat Bacaan Tekanan Darah</CardTitle>
+          <CardDescription>Daftar pengukuran tekanan darah 7 hari terakhir</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {bpReadings.length > 0 ? (
+            <div className="space-y-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tanggal</TableHead>
+                    <TableHead>Waktu</TableHead>
+                    <TableHead>Sistolik</TableHead>
+                    <TableHead>Diastolik</TableHead>
+                    <TableHead>Denyut Nadi</TableHead>
+                    <TableHead>Kategori</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {bpReadings.slice(0, 7).map((reading) => {
+                    // Determine blood pressure category
+                    let category = '';
+                    let badgeVariant: "default" | "secondary" | "destructive" = "default";
+                    
+                    if (reading.systolic < 120 && reading.diastolic < 80) {
+                      category = 'Normal';
+                      badgeVariant = "default";
+                    } else if (reading.systolic < 130 && reading.diastolic < 85) {
+                      category = 'Tinggi Ringan';
+                      badgeVariant = "secondary";
+                    } else if (reading.systolic < 140 && reading.diastolic < 90) {
+                      category = 'Tinggi Sedang';
+                      badgeVariant = "secondary";
+                    } else if (reading.systolic < 160 && reading.diastolic < 100) {
+                      category = 'Tinggi';
+                      badgeVariant = "destructive";
+                    } else {
+                      category = 'Tinggi Berat';
+                      badgeVariant = "destructive";
+                    }
+
+                    return (
+                      <TableRow key={reading.id}>
+                        <TableCell className="font-medium">
+                          {format(new Date(reading.timestamp), "dd/MM/yyyy")}
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(reading.timestamp), "HH:mm")}
+                        </TableCell>
+                        <TableCell>{reading.systolic} mmHg</TableCell>
+                        <TableCell>{reading.diastolic} mmHg</TableCell>
+                        <TableCell>{reading.pulse} BPM</TableCell>
+                        <TableCell>
+                          <Badge variant={badgeVariant}>
+                            {category}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
+              Belum ada data tekanan darah
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
