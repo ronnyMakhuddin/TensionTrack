@@ -238,6 +238,51 @@ export default function TrendsPage() {
       date: format(new Date(r.timestamp), "MMM d"),
     }));
 
+  // Health trend data for chart - make it dynamic based on actual data
+  const getHealthTrendData = () => {
+    const hasBP = bpReadings.length > 0;
+    const hasActivity = activityLogs.length > 0;
+    const hasSleep = sleepLogs.length > 0;
+    const hasExercise = exerciseLogs.length > 0;
+    const hasFood = foodLogs.length > 0;
+
+    const data = [];
+    if (hasBP) data.push({ name: 'Tekanan Darah', value: 30, color: '#ef4444' });
+    if (hasActivity) data.push({ name: 'Aktivitas', value: 25, color: '#3b82f6' });
+    if (hasSleep) data.push({ name: 'Tidur', value: 20, color: '#8b5cf6' });
+    if (hasExercise) data.push({ name: 'Latihan', value: 15, color: '#10b981' });
+    if (hasFood) data.push({ name: 'Diet', value: 10, color: '#f59e0b' });
+
+    // If no data, show default
+    if (data.length === 0) {
+      return [
+        { name: 'Tekanan Darah', value: 30, color: '#ef4444' },
+        { name: 'Aktivitas', value: 25, color: '#3b82f6' },
+        { name: 'Tidur', value: 20, color: '#8b5cf6' },
+        { name: 'Latihan', value: 15, color: '#10b981' },
+        { name: 'Diet', value: 10, color: '#f59e0b' },
+      ];
+    }
+
+    return data;
+  };
+
+  // Activity impact data with better labels
+  const getActivityImpactData = () => {
+    if (activityLogs.length === 0) return [];
+
+    const positive = activityLogs.filter(log => log.healthImpact === "positive").length;
+    const negative = activityLogs.filter(log => log.healthImpact === "negative").length;
+    const neutral = activityLogs.filter(log => log.healthImpact === "neutral").length;
+
+    const data = [];
+    if (positive > 0) data.push({ name: 'Aktivitas Sehat', value: positive, color: '#10b981' });
+    if (negative > 0) data.push({ name: 'Aktivitas Tidak Sehat', value: negative, color: '#ef4444' });
+    if (neutral > 0) data.push({ name: 'Aktivitas Netral', value: neutral, color: '#6b7280' });
+
+    return data;
+  };
+
   // Generate AI plan for behavior change
   const generateAIPlan = async () => {
     if (!user || !db) return;
@@ -273,7 +318,8 @@ export default function TrendsPage() {
           description: "Plan perubahan perilaku berhasil dibuat.",
         });
       } else {
-        throw new Error('Failed to generate AI plan');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate AI plan');
       }
     } catch (error) {
       console.error('Error generating AI plan:', error);
@@ -288,20 +334,10 @@ export default function TrendsPage() {
   };
 
   // Health trend data for chart
-  const healthTrendData = [
-    { name: 'Tekanan Darah', value: 30, color: '#ef4444' },
-    { name: 'Aktivitas', value: 25, color: '#3b82f6' },
-    { name: 'Tidur', value: 20, color: '#8b5cf6' },
-    { name: 'Latihan', value: 15, color: '#10b981' },
-    { name: 'Diet', value: 10, color: '#f59e0b' },
-  ];
+  const healthTrendData = getHealthTrendData();
 
   // Activity impact data
-  const activityImpactData = activityLogs.length > 0 ? [
-    { name: 'Sehat', value: activityLogs.filter(log => log.healthImpact === "positive").length, color: '#10b981' },
-    { name: 'Tidak Sehat', value: activityLogs.filter(log => log.healthImpact === "negative").length, color: '#ef4444' },
-    { name: 'Netral', value: activityLogs.filter(log => log.healthImpact === "neutral").length, color: '#6b7280' },
-  ] : [];
+  const activityImpactData = getActivityImpactData();
 
   return (
     <div className="space-y-6">
@@ -318,32 +354,40 @@ export default function TrendsPage() {
             <CardDescription>Persentase kontribusi setiap faktor kesehatan</CardDescription>
           </CardHeader>
           <CardContent>
-            <PieChart width={300} height={200}>
-              <Pie
-                data={healthTrendData}
-                cx={150}
-                cy={100}
-                innerRadius={40}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-              >
-                {healthTrendData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-            </PieChart>
-            <div className="mt-4 space-y-2">
-              {healthTrendData.map((item, index) => (
-                <div key={index} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span>{item.name}</span>
-                  </div>
-                  <span className="font-medium">{item.value}%</span>
+            {healthTrendData.length > 0 ? (
+              <>
+                <PieChart width={300} height={200}>
+                  <Pie
+                    data={healthTrendData}
+                    cx={150}
+                    cy={100}
+                    innerRadius={40}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {healthTrendData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+                <div className="mt-4 space-y-2">
+                  {healthTrendData.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between text-sm">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                        <span>{item.name}</span>
+                      </div>
+                      <span className="font-medium">{item.value}%</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            ) : (
+              <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
+                Belum ada data kesehatan
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -354,21 +398,34 @@ export default function TrendsPage() {
           </CardHeader>
           <CardContent>
             {activityImpactData.length > 0 ? (
-              <PieChart width={300} height={200}>
-                <Pie
-                  data={activityImpactData}
-                  cx={150}
-                  cy={100}
-                  innerRadius={40}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {activityImpactData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+              <>
+                <PieChart width={300} height={200}>
+                  <Pie
+                    data={activityImpactData}
+                    cx={150}
+                    cy={100}
+                    innerRadius={40}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {activityImpactData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+                <div className="mt-4 space-y-2">
+                  {activityImpactData.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between text-sm">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                        <span>{item.name}</span>
+                      </div>
+                      <span className="font-medium">{item.value} aktivitas</span>
+                    </div>
                   ))}
-                </Pie>
-              </PieChart>
+                </div>
+              </>
             ) : (
               <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
                 Belum ada data aktivitas
