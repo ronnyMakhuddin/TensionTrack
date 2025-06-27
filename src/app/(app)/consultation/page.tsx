@@ -25,7 +25,6 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import html2pdf from 'html2pdf.js';
 
 // Gunakan nomor telepon placeholder untuk integrasi WhatsApp
 const DOCTOR_WHATSAPP_NUMBER = "6282131519004"; // Nomor Indonesia untuk konsultasi
@@ -512,7 +511,6 @@ export default function ConsultationPage() {
     try {
       console.log('Report content length:', report.length);
       console.log('Is password protected:', isPasswordProtected);
-      console.log('Password form values:', passwordForm.getValues());
       
       // Get password if protected
       const password = isPasswordProtected ? passwordForm.getValues().password : '';
@@ -525,11 +523,16 @@ export default function ConsultationPage() {
         <head>
           <title>Laporan Kesehatan - TensionTrack</title>
           <style>
+            @page {
+              size: A4;
+              margin: 20mm;
+            }
             body {
               font-family: Arial, sans-serif;
               font-size: 12px;
               line-height: 1.4;
-              margin: 20px;
+              margin: 0;
+              padding: 20px;
               color: #333;
             }
             .header {
@@ -580,6 +583,7 @@ export default function ConsultationPage() {
             }
             @media print {
               body { margin: 10px; }
+              .no-print { display: none; }
             }
           </style>
         </head>
@@ -612,57 +616,40 @@ export default function ConsultationPage() {
             TensionTrack - Aplikasi Manajemen Hipertensi<br>
             Dokumen dilindungi untuk kerahasiaan pasien
           </div>
+          
+          <div class="no-print">
+            <button onclick="window.print()">Print PDF</button>
+            <button onclick="window.close()">Tutup</button>
+          </div>
         </body>
         </html>
       `;
       
       console.log('HTML content created, length:', htmlContent.length);
       
-      // Create temporary element
-      const element = document.createElement('div');
-      element.innerHTML = htmlContent;
-      element.style.position = 'absolute';
-      element.style.left = '-9999px';
-      element.style.top = '-9999px';
-      element.style.width = '800px';
-      document.body.appendChild(element);
-      
-      console.log('Element created and added to DOM');
-      
-      // Configure html2pdf options
-      const opt = {
-        margin: [10, 10, 10, 10],
-        filename: `laporan-kesehatan-${format(new Date(), "dd-MM-yyyy-HHmm")}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2,
-          useCORS: true,
-          letterRendering: true,
-          allowTaint: true
-        },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait' 
-        }
-      };
-      
-      console.log('Starting PDF generation...');
-      
-      // Generate PDF
-      await html2pdf().set(opt).from(element).save();
-      
-      console.log('PDF generated successfully');
-      
-      // Clean up
-      document.body.removeChild(element);
-      
-      toast({
-        title: "PDF Berhasil Dibuat",
-        description: isPasswordProtected 
-          ? `PDF dilindungi dengan password dan disimpan`
-          : `PDF berhasil disimpan`,
-      });
+      // Open new window and print
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        printWindow.focus();
+        
+        // Auto print after a short delay
+        setTimeout(() => {
+          printWindow.print();
+        }, 500);
+        
+        console.log('Print window opened and print triggered');
+        
+        toast({
+          title: "PDF Berhasil Dibuat",
+          description: isPasswordProtected 
+            ? `PDF dilindungi dengan password dan siap dicetak`
+            : `PDF siap dicetak`,
+        });
+      } else {
+        throw new Error('Failed to open print window');
+      }
       
     } catch (error) {
       console.error('Error creating PDF:', error);
