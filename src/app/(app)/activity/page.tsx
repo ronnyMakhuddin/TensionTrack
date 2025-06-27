@@ -187,7 +187,10 @@ export default function ActivityPage() {
         // Generate saran AI
         const activityHistory = activityLogs
           .slice(0, 7)
-          .map(log => `${log.activityType || 'Aktivitas'} - ${log.description} (${log.duration} menit, ${log.timestamp && format(new Date(log.timestamp), "dd/MM")})`)
+          .map(log => {
+            const label = activityTypes.find(a => a.value === log.activityType)?.label || log.activityType || 'Aktivitas';
+            return `${label} - ${log.description} (${log.duration} menit, ${log.timestamp && format(new Date(log.timestamp), "dd/MM")})`;
+          })
           .join(", ") || "Belum ada riwayat aktivitas";
 
         const activityTypesList = [...new Set(activityLogs.map(log => log.activityType).filter((type): type is string => Boolean(type)))];
