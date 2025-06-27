@@ -21,7 +21,7 @@ import { Share2, MessageCircle, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 
 // Gunakan nomor telepon placeholder untuk integrasi WhatsApp
-const DOCTOR_WHATSAPP_NUMBER = "6285692339004"; // Nomor konsultasi
+const DOCTOR_WHATSAPP_NUMBER = "6281234567890"; // Contoh nomor Indonesia
 
 export default function ConsultationPage() {
   const { user } = useAuth();
@@ -30,7 +30,7 @@ export default function ConsultationPage() {
   const { toast } = useToast();
 
   const generateReport = async () => {
-    if (!user) return;
+    if (!user || !db) return;
     setIsGenerating(true);
 
     try {

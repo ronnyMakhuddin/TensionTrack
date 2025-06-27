@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getAuth, Auth } from "firebase/auth";
+import { getFirestore, Firestore } from "firebase/firestore";
 
 // Check if we're in production and have proper Firebase config
 const isProduction = process.env.NODE_ENV === 'production';
@@ -24,8 +24,8 @@ if (isProduction && !hasValidConfig) {
 
 // Initialize Firebase
 let app;
-let auth;
-let db;
+let auth: Auth | null = null;
+let db: Firestore | null = null;
 
 try {
   app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
