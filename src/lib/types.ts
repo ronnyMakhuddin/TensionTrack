@@ -60,3 +60,15 @@ export interface UserProfile {
   stepGoal?: number;
   durationGoal?: number;
 }
+
+export interface ExerciseLog {
+  id: string;
+  exerciseTitle: string;
+  duration: number; // in minutes
+  pulse: number; // detak jantung setelah latihan
+  breathing: string; // kondisi pernapasan (normal, cepat, lambat)
+  notes: string; // catatan tambahan
+  difficulty: 'easy' | 'medium' | 'hard'; // tingkat kesulitan
+  completed: boolean; // apakah latihan selesai
+  timestamp: string; // ISO string
+}

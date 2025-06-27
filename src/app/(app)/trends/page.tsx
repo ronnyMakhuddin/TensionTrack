@@ -1,11 +1,10 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/lib/firebase";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
-import type { ActivityLog, BloodPressureReading, SleepLog } from "@/lib/types";
+import type { ActivityLog, BloodPressureReading, SleepLog, ExerciseLog } from "@/lib/types";
 import { PageHeader } from "@/components/page-header";
 import { BloodPressureChart } from "@/components/blood-pressure-chart";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -20,6 +19,7 @@ import {
 import { format } from "date-fns";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Badge } from "@/components/ui/badge";
 
 const activityChartConfig = {
   steps: {
@@ -39,14 +39,26 @@ const sleepChartConfig = {
   },
 } satisfies ChartConfig;
 
+const exerciseChartConfig = {
+  duration: {
+    label: "Durasi (menit)",
+    color: "hsl(var(--chart-4))",
+  },
+  pulse: {
+    label: "Detak Jantung (BPM)",
+    color: "hsl(var(--chart-5))",
+  },
+} satisfies ChartConfig;
+
 export default function TrendsPage() {
   const { user } = useAuth();
   const [bpReadings, setBpReadings] = useState<BloodPressureReading[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [sleepLogs, setSleepLogs] = useState<SleepLog[]>([]);
+  const [exerciseLogs, setExerciseLogs] = useState<ExerciseLog[]>([]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !db) return;
     
     const bpQuery = query(collection(db, "users", user.uid, "readings"), orderBy("timestamp", "desc"));
     const unsubscribeBp = onSnapshot(bpQuery, (snapshot) => {
@@ -66,10 +78,17 @@ export default function TrendsPage() {
         setSleepLogs(data);
     });
 
+    const exerciseQuery = query(collection(db, "users", user.uid, "exercises"), orderBy("timestamp", "desc"));
+    const unsubscribeExercise = onSnapshot(exerciseQuery, (snapshot) => {
+        const data = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()})) as ExerciseLog[];
+        setExerciseLogs(data);
+    });
+
     return () => {
         unsubscribeBp();
         unsubscribeActivity();
         unsubscribeSleep();
+        unsubscribeExercise();
     };
   }, [user]);
 
@@ -82,6 +101,14 @@ export default function TrendsPage() {
     }));
 
   const sleepChartData = [...sleepLogs]
+    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+    .slice(-7) // Get last 7 days
+    .map((r) => ({
+      ...r,
+      date: format(new Date(r.timestamp), "MMM d"),
+    }));
+
+  const exerciseChartData = [...exerciseLogs]
     .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
     .slice(-7) // Get last 7 days
     .map((r) => ({
@@ -157,6 +184,38 @@ export default function TrendsPage() {
             ) : (
               <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
                 Catat data tidur pertama Anda untuk melihat grafik.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Tren Latihan</CardTitle>
+            <CardDescription>Menampilkan data latihan 7 hari terakhir.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {exerciseChartData.length > 0 ? (
+              <ChartContainer config={exerciseChartConfig} className="min-h-[200px] w-full">
+                <BarChart accessibilityLayer data={exerciseChartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                  />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent indicator="dot" />}
+                  />
+                  <ChartLegend content={<ChartLegendContent />} />
+                  <Bar dataKey="duration" fill="var(--color-duration)" radius={4} />
+                  <Bar dataKey="pulse" fill="var(--color-pulse)" radius={4} />
+                </BarChart>
+              </ChartContainer>
+            ) : (
+              <div className="flex h-[200px] w-full items-center justify-center text-muted-foreground">
+                Catat latihan pertama Anda untuk melihat grafik.
               </div>
             )}
           </CardContent>
@@ -260,6 +319,55 @@ export default function TrendsPage() {
                 <TableRow>
                   <TableCell colSpan={2} className="h-24 text-center">
                     Tidak ada data tidur ditemukan.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Riwayat Latihan</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[150px]">Tanggal</TableHead>
+                <TableHead className="w-[100px]">Waktu</TableHead>
+                <TableHead>Latihan</TableHead>
+                <TableHead>Durasi (menit)</TableHead>
+                <TableHead>Detak Jantung</TableHead>
+                <TableHead>Pernapasan</TableHead>
+                <TableHead>Kesulitan</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {exerciseLogs.length > 0 ? (
+                exerciseLogs.map((log) => (
+                  <TableRow key={log.id}>
+                    <TableCell className="font-medium">{log.timestamp && format(new Date(log.timestamp), "MMM d, yyyy")}</TableCell>
+                    <TableCell>{log.timestamp && format(new Date(log.timestamp), "p")}</TableCell>
+                    <TableCell>{log.exerciseTitle}</TableCell>
+                    <TableCell>{log.duration} menit</TableCell>
+                    <TableCell>{log.pulse} BPM</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {log.breathing === "normal" ? "Normal" : log.breathing === "cepat" ? "Cepat" : "Lambat"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {log.difficulty === "easy" ? "Mudah" : log.difficulty === "medium" ? "Sedang" : "Sulit"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center">
+                    Tidak ada data latihan ditemukan.
                   </TableCell>
                 </TableRow>
               )}
