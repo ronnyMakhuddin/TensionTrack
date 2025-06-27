@@ -289,7 +289,32 @@ export default function ActivityPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="activityType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Jenis Aktivitas</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih jenis aktivitas" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {activityTypes.map((activity) => (
+                          <SelectItem key={activity.value} value={activity.value}>
+                            {activity.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {form.watch("activityType") === "walking" && (
                   <FormField
                     control={form.control}
@@ -341,31 +366,6 @@ export default function ActivityPage() {
                   )}
                 />
               </div>
-
-              <FormField
-                control={form.control}
-                name="activityType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Jenis Aktivitas</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih jenis aktivitas" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {activityTypes.map((activity) => (
-                          <SelectItem key={activity.value} value={activity.value}>
-                            {activity.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               <FormField
                 control={form.control}
