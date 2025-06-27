@@ -17,14 +17,8 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Share2, MessageCircle, Loader2, Printer, FileText, Lock } from "lucide-react";
+import { Share2, MessageCircle, Loader2, Printer, FileText } from "lucide-react";
 import { format } from "date-fns";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 
 // Gunakan nomor telepon placeholder untuk integrasi WhatsApp
 const DOCTOR_WHATSAPP_NUMBER = "6282131519004"; // Nomor Indonesia untuk konsultasi
@@ -43,24 +37,11 @@ const calculateAge = (birthDate: string): number => {
   return age;
 };
 
-const passwordSchema = z.object({
-  password: z.string().min(4, "Password minimal 4 karakter").max(20, "Password maksimal 20 karakter"),
-});
-
 export default function ConsultationPage() {
   const { user } = useAuth();
   const [report, setReport] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isPasswordProtected, setIsPasswordProtected] = useState(false);
-  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const { toast } = useToast();
-
-  const passwordForm = useForm<z.infer<typeof passwordSchema>>({
-    resolver: zodResolver(passwordSchema),
-    defaultValues: {
-      password: "",
-    },
-  });
 
   const generateReport = async () => {
     if (!user || !db) return;
@@ -430,14 +411,6 @@ export default function ConsultationPage() {
       reportContent += `Dibuat oleh: TensionTrack App\n`;
       reportContent += `Untuk konsultasi lebih lanjut, hubungi Ners Counselor Anda.\n\n`;
       
-      if (isPasswordProtected) {
-        reportContent += "🔒 INFORMASI KEAMANAN PDF\n";
-        reportContent += "========================\n";
-        reportContent += "PDF laporan ini dilindungi dengan password untuk kerahasiaan pasien.\n";
-        reportContent += "Password akan dikirimkan secara terpisah melalui WhatsApp.\n";
-        reportContent += "Jangan bagikan password kepada pihak yang tidak berwenang.\n\n";
-      }
-
       console.log('Report generated, length:', reportContent.length);
       console.log('Report preview:', reportContent.substring(0, 500) + '...');
 
@@ -464,35 +437,11 @@ export default function ConsultationPage() {
     let message = encodeURIComponent(report);
     let whatsappUrl = `https://wa.me/${DOCTOR_WHATSAPP_NUMBER}?text=${message}`;
     
-    // Jika PDF dilindungi password, kirim password secara terpisah
-    if (isPasswordProtected) {
-      const passwordMessage = encodeURIComponent(
-        `🔐 PASSWORD UNTUK LAPORAN KESEHATAN\n\n` +
-        `Password: ${passwordForm.getValues().password}\n\n` +
-        `⚠️ PERINGATAN:\n` +
-        `• Password ini hanya untuk Ners Counselor\n` +
-        `• Jangan bagikan kepada pihak lain\n` +
-        `• Gunakan untuk membuka PDF laporan kesehatan\n\n` +
-        `Terima kasih.`
-      );
-      
-      // Buka dua tab WhatsApp - satu untuk laporan, satu untuk password
-      window.open(whatsappUrl, "_blank");
-      setTimeout(() => {
-        window.open(`https://wa.me/${DOCTOR_WHATSAPP_NUMBER}?text=${passwordMessage}`, "_blank");
-      }, 1000);
-      
-      toast({
-        title: "Laporan & Password Terkirim",
-        description: "Laporan dan password dikirim secara terpisah untuk keamanan.",
-      });
-    } else {
-      window.open(whatsappUrl, "_blank");
-      toast({
-        title: "Laporan Terkirim",
-        description: "Laporan kesehatan berhasil dikirim ke Ners Counselor.",
-      });
-    }
+    window.open(whatsappUrl, "_blank");
+    toast({
+      title: "Laporan Terkirim",
+      description: "Laporan kesehatan berhasil dikirim ke Ners Counselor.",
+    });
     
     setReport(null); // Hapus laporan setelah dibagikan
   };
@@ -510,11 +459,6 @@ export default function ConsultationPage() {
     
     try {
       console.log('Report content length:', report.length);
-      console.log('Is password protected:', isPasswordProtected);
-      
-      // Get password if protected
-      const password = isPasswordProtected ? passwordForm.getValues().password : '';
-      console.log('Password:', password);
       
       // Create HTML content for PDF
       const htmlContent = `
@@ -601,12 +545,6 @@ export default function ConsultationPage() {
             Hanya boleh dibuka oleh tenaga medis yang berwenang.
           </div>
           
-          ${isPasswordProtected && password ? `
-          <div class="password">
-            🔒 Password untuk membuka PDF: ${password}
-          </div>
-          ` : ''}
-          
           <div class="content">
             ${report}
           </div>
@@ -643,9 +581,7 @@ export default function ConsultationPage() {
         
         toast({
           title: "PDF Berhasil Dibuat",
-          description: isPasswordProtected 
-            ? `PDF dilindungi dengan password dan siap dicetak`
-            : `PDF siap dicetak`,
+          description: "PDF siap dicetak",
         });
       } else {
         throw new Error('Failed to open print window');
@@ -659,25 +595,6 @@ export default function ConsultationPage() {
         variant: "destructive",
       });
     }
-  };
-
-  const handlePasswordSubmit = (values: z.infer<typeof passwordSchema>) => {
-    console.log('Password submitted:', values.password);
-    setIsPasswordProtected(true);
-    setShowPasswordDialog(false);
-    
-    // Store password in form for later use
-    passwordForm.setValue('password', values.password);
-    
-    toast({
-      title: "PDF Dilindungi",
-      description: `PDF akan dibuat dengan password: ${values.password}`,
-    });
-    
-    // Wait a bit for state to update, then generate PDF
-    setTimeout(() => {
-      printPDF();
-    }, 100);
   };
 
   const scheduleUrl = `https://wa.me/${DOCTOR_WHATSAPP_NUMBER}?text=${encodeURIComponent("Halo, saya ingin menjadwalkan sesi konsultasi kesehatan.")}`;
@@ -739,51 +656,10 @@ export default function ConsultationPage() {
                   <MessageCircle className="mr-2 h-4 w-4" />
                   Bagikan ke Ners Counselor via WhatsApp
                 </Button>
-                <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline">
-                      <Lock className="mr-2 h-4 w-4" />
-                      Print PDF dengan Password
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Lindungi PDF dengan Password</DialogTitle>
-                    </DialogHeader>
-                    <Form {...passwordForm}>
-                      <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)} className="space-y-4">
-                        <FormField
-                          control={passwordForm.control}
-                          name="password"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Password untuk PDF</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="password" 
-                                  placeholder="Masukkan password (4-20 karakter)" 
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <div className="flex gap-2 pt-4">
-                          <Button type="submit" className="flex-1">
-                            <Lock className="mr-2 h-4 w-4" />
-                            Buat PDF Terlindungi
-                          </Button>
-                          <DialogClose asChild>
-                            <Button variant="outline" className="flex-1">
-                              Batal
-                            </Button>
-                          </DialogClose>
-                        </div>
-                      </form>
-                    </Form>
-                  </DialogContent>
-                </Dialog>
+                <Button variant="outline" onClick={printPDF}>
+                  <Printer className="mr-2 h-4 w-4" />
+                  Print PDF
+                </Button>
                 <Button variant="outline" onClick={() => setReport(null)}>
                   Batal
                 </Button>
