@@ -72,3 +72,35 @@ export interface ExerciseLog {
   completed: boolean; // apakah latihan selesai
   timestamp: string; // ISO string
 }
+
+export interface PatientProfile {
+  id: string;
+  name: string;
+  age: number;
+  gender: 'male' | 'female';
+  height: number; // in cm
+  weight: number; // in kg
+  phoneNumber: string;
+  address: string;
+  emergencyContact: {
+    name: string;
+    relationship: string;
+    phoneNumber: string;
+  };
+  medicalHistory: {
+    hasHypertension: boolean;
+    hasDiabetes: boolean;
+    hasHeartDisease: boolean;
+    hasKidneyDisease: boolean;
+    otherConditions: string[];
+  };
+  medications: {
+    name: string;
+    dosage: string;
+    frequency: string;
+  }[];
+  allergies: string[];
+  bloodType: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | 'unknown';
+  createdAt: string;
+  updatedAt: string;
+}

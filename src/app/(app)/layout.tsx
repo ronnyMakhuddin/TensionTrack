@@ -21,6 +21,7 @@ import {
   Loader2,
   LogOut,
   Bed,
+  User,
 } from "lucide-react";
 
 import {
@@ -51,8 +52,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      router.push("/login");
+      if (auth) {
+        await signOut(auth);
+        router.push("/login");
+      }
     } catch (error) {
       console.error("Error signing out: ", error);
     }
@@ -71,6 +74,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { href: "/consultation", label: "Konsultasi", icon: Video },
     { href: "/advice", label: "Saran AI", icon: BrainCircuit },
     { href: "/education", label: "Edukasi", icon: BookOpen },
+    { href: "/profile", label: "Profil", icon: User },
   ];
 
   const currentPage = menuItems.find((item) => {

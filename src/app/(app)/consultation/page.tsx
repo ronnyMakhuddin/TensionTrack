@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/lib/firebase";
-import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
-import type { BloodPressureReading, FoodLog, ActivityLog, SleepLog, ExerciseLog } from "@/lib/types";
+import { collection, query, orderBy, limit, getDocs, getDoc, doc } from "firebase/firestore";
+import type { BloodPressureReading, FoodLog, ActivityLog, SleepLog, ExerciseLog, PatientProfile } from "@/lib/types";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,9 +55,58 @@ export default function ConsultationPage() {
       const sleepLogs = sleepSnapshot.docs.map(d => d.data() as SleepLog);
       const exerciseLogs = exerciseSnapshot.docs.map(d => d.data() as ExerciseLog);
       
+      // Fetch patient profile
+      let patientProfile: PatientProfile | null = null;
+      try {
+        const profileDoc = await getDoc(doc(db, "users", user.uid, "profile", "data"));
+        if (profileDoc.exists()) {
+          patientProfile = profileDoc.data() as PatientProfile;
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+
       let reportContent = "LAPORAN KESEHATAN KOMPREHENSIF\n";
       reportContent += "===================================\n";
       reportContent += `Tanggal: ${format(new Date(), "dd/MM/yyyy HH:mm")}\n\n`;
+
+      // Identitas Pasien
+      reportContent += "👤 IDENTITAS PASIEN\n";
+      reportContent += "==================\n";
+      if (patientProfile) {
+        reportContent += `Nama: ${patientProfile.name}\n`;
+        reportContent += `Umur: ${patientProfile.age} tahun\n`;
+        reportContent += `Jenis Kelamin: ${patientProfile.gender === "male" ? "Laki-laki" : "Perempuan"}\n`;
+        reportContent += `Tinggi Badan: ${patientProfile.height} cm\n`;
+        reportContent += `Berat Badan: ${patientProfile.weight} kg\n`;
+        
+        // Calculate BMI
+        if (patientProfile.height && patientProfile.weight) {
+          const heightInMeters = patientProfile.height / 100;
+          const bmi = patientProfile.weight / (heightInMeters * heightInMeters);
+          reportContent += `BMI: ${bmi.toFixed(1)} (${bmi < 18.5 ? "Kurus" : bmi < 25 ? "Normal" : bmi < 30 ? "Gemuk" : "Obesitas"})\n`;
+        }
+        
+        reportContent += `Nomor Telepon: ${patientProfile.phoneNumber}\n`;
+        reportContent += `Alamat: ${patientProfile.address}\n`;
+        
+        // Emergency Contact
+        reportContent += `\nKontak Darurat:\n`;
+        reportContent += `  Nama: ${patientProfile.emergencyContact.name}\n`;
+        reportContent += `  Hubungan: ${patientProfile.emergencyContact.relationship}\n`;
+        reportContent += `  Telepon: ${patientProfile.emergencyContact.phoneNumber}\n`;
+        
+        // Medical History
+        reportContent += `\nRiwayat Kesehatan:\n`;
+        if (patientProfile.medicalHistory.hasHypertension) reportContent += `  • Hipertensi\n`;
+        if (patientProfile.medicalHistory.hasDiabetes) reportContent += `  • Diabetes\n`;
+        if (patientProfile.medicalHistory.hasHeartDisease) reportContent += `  • Penyakit Jantung\n`;
+        if (patientProfile.medicalHistory.hasKidneyDisease) reportContent += `  • Penyakit Ginjal\n`;
+      } else {
+        reportContent += "Data identitas pasien belum lengkap.\n";
+        reportContent += "Silakan lengkapi profil di menu Profil.\n";
+      }
+      reportContent += "\n";
 
       // Ringkasan Kesehatan
       reportContent += "📊 RINGKASAN KESEHATAN\n";
