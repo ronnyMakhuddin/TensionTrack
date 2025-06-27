@@ -197,11 +197,11 @@ export default function ConsultationPage() {
       reportContent += "• Tingkatkan aktivitas fisik yang sehat\n";
       reportContent += "• Kurangi aktivitas yang berdampak negatif\n";
       reportContent += "• Pertahankan pola tidur yang teratur\n";
-      reportContent += "• Konsultasikan dengan dokter untuk evaluasi lebih lanjut\n\n";
+      reportContent += "• Konsultasikan dengan Ners Counselor untuk evaluasi lebih lanjut\n\n";
 
       reportContent += "--- AKHIR LAPORAN ---\n";
       reportContent += `Dibuat oleh: TensionTrack App\n`;
-      reportContent += `Untuk konsultasi lebih lanjut, hubungi dokter Anda.`;
+      reportContent += `Untuk konsultasi lebih lanjut, hubungi Ners Counselor Anda.`;
 
       setReport(reportContent);
       toast({
@@ -244,7 +244,7 @@ export default function ConsultationPage() {
             <CardTitle>Jadwalkan Sesi Konsultasi</CardTitle>
           </div>
           <CardDescription>
-            Jadwalkan sesi konsultasi dengan dokter atau ahli gizi Anda langsung melalui WhatsApp.
+            Jadwalkan sesi konsultasi dengan Ners Counselor atau ahli gizi Anda langsung melalui WhatsApp.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -264,7 +264,7 @@ export default function ConsultationPage() {
             <CardTitle>Bagikan Laporan Kesehatan</CardTitle>
           </div>
           <CardDescription>
-            Buat ringkasan riwayat kesehatan Anda untuk dibagikan dengan dokter
+            Buat ringkasan riwayat kesehatan Anda untuk dibagikan dengan Ners Counselor
             Anda melalui WhatsApp sebelum sesi konsultasi.
           </CardDescription>
         </CardHeader>
@@ -285,7 +285,7 @@ export default function ConsultationPage() {
               <div className="flex gap-2">
                 <Button onClick={shareReportViaWhatsApp}>
                   <MessageCircle className="mr-2 h-4 w-4" />
-                  Bagikan ke Dokter via WhatsApp
+                  Bagikan ke Ners Counselor via WhatsApp
                 </Button>
                 <Button variant="outline" onClick={() => setReport(null)}>
                   Batal
