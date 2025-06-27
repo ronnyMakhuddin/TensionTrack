@@ -30,7 +30,6 @@ const reminderSchema = z.object({
   frequency: z.enum(['once', 'multiple']),
   time: z.string().optional(),
   times: z.array(z.string()).optional(),
-  interval: z.coerce.number().optional(),
   days: z.array(z.number()).min(1, "Pilih setidaknya satu hari."),
   dosage: z.string().optional(),
   notes: z.string().optional(),
@@ -47,13 +46,6 @@ const reminderSchema = z.object({
       code: z.ZodIssueCode.custom,
       message: "Pilih setidaknya satu waktu untuk multiple times.",
       path: ["times"],
-    });
-  }
-  if (data.frequency === 'multiple' && (!data.interval || data.interval < 1)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Interval harus minimal 1 jam untuk multiple times.",
-      path: ["interval"],
     });
   }
 });
@@ -97,7 +89,6 @@ export default function RemindersPage() {
       frequency: "once",
       time: "08:00",
       times: [],
-      interval: 8,
       days: [],
       dosage: "",
       notes: "",
@@ -330,37 +321,50 @@ export default function RemindersPage() {
                                   </Button>
                                 </div>
                               ))}
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  const newTimes = [...(field.value || []), "08:00"];
-                                  field.onChange(newTimes);
-                                }}
-                              >
-                                + Tambah Waktu
-                              </Button>
+                              <div className="flex gap-2 flex-wrap">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newTimes = [...(field.value || []), "08:00"];
+                                    field.onChange(newTimes);
+                                  }}
+                                >
+                                  + Tambah Waktu
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    field.onChange(["08:00", "16:00", "00:00"]);
+                                  }}
+                                >
+                                  3x1 (8-16-00)
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    field.onChange(["08:00", "20:00"]);
+                                  }}
+                                >
+                                  2x1 (8-20)
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    field.onChange(["08:00", "14:00", "20:00"]);
+                                  }}
+                                >
+                                  3x1 (8-14-20)
+                                </Button>
+                              </div>
                             </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="interval"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Interval (jam)</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                min="1" 
-                                max="24" 
-                                placeholder="8" 
-                                {...field}
-                              />
-                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
