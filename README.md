@@ -38,28 +38,6 @@ Aplikasi web modern dan pintar untuk manajemen hipertensi dengan AI-powered advi
 - **Interactive Charts** - Visualisasi data yang informatif
 - **Intuitive UI** - Interface yang mudah digunakan
 
-## 🚀 Deployment Cepat
-
-### Vercel (Rekomendasi)
-```bash
-# 1. Upload ke GitHub
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/USERNAME/tensiontrack.git
-git push -u origin main
-
-# 2. Deploy ke Vercel
-# Kunjungi vercel.com → New Project → Import Repository → Deploy
-```
-
-### Platform Lain
-- **Netlify**: [netlify.com](https://netlify.com)
-- **Railway**: [railway.app](https://railway.app)  
-- **Render**: [render.com](https://render.com)
-
-📖 **Panduan lengkap**: Lihat [QUICK_DEPLOY.md](./QUICK_DEPLOY.md)
-
 ## 🛠️ Development
 
 ### Prerequisites
@@ -80,22 +58,6 @@ npm run build
 # Start production server
 npm start
 ```
-
-### Environment Variables
-Buat file `.env.local`:
-```env
-# Firebase Config (opsional untuk demo)
-NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-
-# Google AI (Genkit) - untuk fitur AI
-GOOGLE_AI_API_KEY=your_google_ai_key
-```
-
 ## 📁 Struktur Project
 
 ```
