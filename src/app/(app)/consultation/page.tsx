@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Share2, MessageCircle, Loader2 } from "lucide-react";
+import { Share2, MessageCircle, Loader2, Printer, FileText } from "lucide-react";
 import { format } from "date-fns";
 
 // Gunakan nomor telepon placeholder untuk integrasi WhatsApp
@@ -235,6 +235,94 @@ export default function ConsultationPage() {
       
       reportContent += "\n";
 
+      // Rencana Perubahan Perilaku
+      reportContent += "📋 RENCANA PERUBAHAN PERILAKU\n";
+      reportContent += "==============================\n";
+      reportContent += "Data Sebelum Perlakuan:\n";
+      reportContent += "----------------------\n";
+      
+      // Data tekanan darah sebelum perlakuan
+      if (bpReadings.length > 0) {
+        const recentReadings = bpReadings.slice(0, 3); // 3 pengukuran terakhir
+        const avgSystolic = recentReadings.reduce((sum, r) => sum + r.systolic, 0) / recentReadings.length;
+        const avgDiastolic = recentReadings.reduce((sum, r) => sum + r.diastolic, 0) / recentReadings.length;
+        reportContent += `• Tekanan darah rata-rata: ${avgSystolic.toFixed(0)}/${avgDiastolic.toFixed(0)} mmHg\n`;
+        reportContent += `• Status: ${avgSystolic >= 140 || avgDiastolic >= 90 ? "Hipertensi" : "Normal"}\n`;
+      }
+      
+      // Data aktivitas sebelum perlakuan
+      if (activityLogs.length > 0) {
+        const negativeActivities = activityLogs.filter(log => log.healthImpact === "negative");
+        const positiveActivities = activityLogs.filter(log => log.healthImpact === "positive");
+        reportContent += `• Aktivitas tidak sehat: ${negativeActivities.length} aktivitas\n`;
+        reportContent += `• Aktivitas sehat: ${positiveActivities.length} aktivitas\n`;
+        if (negativeActivities.length > 0) {
+          reportContent += `• Aktivitas yang perlu diubah: ${negativeActivities.map(log => log.activityType).join(", ")}\n`;
+        }
+      }
+      
+      // Data tidur sebelum perlakuan
+      if (sleepLogs.length > 0) {
+        const avgSleep = sleepLogs.reduce((sum, log) => sum + log.duration, 0) / sleepLogs.length;
+        reportContent += `• Rata-rata jam tidur: ${avgSleep.toFixed(1)} jam\n`;
+        reportContent += `• Status tidur: ${avgSleep >= 7 && avgSleep <= 9 ? "Cukup" : avgSleep < 7 ? "Kurang" : "Berlebihan"}\n`;
+      }
+      
+      // Data latihan sebelum perlakuan
+      if (exerciseLogs.length > 0) {
+        const avgDuration = exerciseLogs.reduce((sum, log) => sum + log.duration, 0) / exerciseLogs.length;
+        reportContent += `• Rata-rata durasi latihan: ${avgDuration.toFixed(1)} menit\n`;
+        reportContent += `• Frekuensi latihan: ${exerciseLogs.length} sesi dalam 10 hari terakhir\n`;
+      }
+      
+      reportContent += "\nRencana Perubahan yang Akan Diimplementasikan:\n";
+      reportContent += "-----------------------------------------\n";
+      
+      // Rekomendasi perubahan berdasarkan data
+      if (bpReadings.length > 0) {
+        const latestBP = bpReadings[0];
+        if (latestBP.systolic >= 140 || latestBP.diastolic >= 90) {
+          reportContent += "• Target tekanan darah: Turunkan ke <140/90 mmHg\n";
+          reportContent += "• Frekuensi pengukuran: 2x sehari (pagi dan malam)\n";
+        }
+      }
+      
+      if (activityLogs.length > 0) {
+        const negativeCount = activityLogs.filter(log => log.healthImpact === "negative").length;
+        if (negativeCount > 0) {
+          reportContent += "• Kurangi aktivitas tidak sehat secara bertahap\n";
+          reportContent += "• Ganti dengan aktivitas sehat yang setara\n";
+        }
+      }
+      
+      if (sleepLogs.length > 0) {
+        const avgSleep = sleepLogs.reduce((sum, log) => sum + log.duration, 0) / sleepLogs.length;
+        if (avgSleep < 7) {
+          reportContent += "• Target jam tidur: 7-9 jam per malam\n";
+          reportContent += "• Buat rutinitas tidur yang konsisten\n";
+        } else if (avgSleep > 9) {
+          reportContent += "• Target jam tidur: 7-9 jam per malam\n";
+          reportContent += "• Kurangi waktu tidur berlebihan\n";
+        }
+      }
+      
+      if (exerciseLogs.length === 0) {
+        reportContent += "• Mulai program latihan terpandu 3x seminggu\n";
+        reportContent += "• Durasi awal: 15-20 menit per sesi\n";
+      } else {
+        const avgDuration = exerciseLogs.reduce((sum, log) => sum + log.duration, 0) / exerciseLogs.length;
+        if (avgDuration < 30) {
+          reportContent += "• Tingkatkan durasi latihan ke 30 menit per sesi\n";
+        }
+        if (exerciseLogs.length < 5) {
+          reportContent += "• Tingkatkan frekuensi latihan ke 5x seminggu\n";
+        }
+      }
+      
+      reportContent += "• Konsultasi rutin dengan Ners Counselor setiap 2 minggu\n";
+      reportContent += "• Evaluasi progress setiap bulan\n";
+      reportContent += "\n";
+
       // Rekomendasi Umum
       reportContent += "💡 REKOMENDASI UMUM\n";
       reportContent += "-------------------\n";
@@ -272,6 +360,81 @@ export default function ConsultationPage() {
     const whatsappUrl = `https://wa.me/${DOCTOR_WHATSAPP_NUMBER}?text=${message}`;
     window.open(whatsappUrl, "_blank");
     setReport(null); // Hapus laporan setelah dibagikan
+  };
+
+  const printPDF = () => {
+    if (!report) return;
+    
+    // Buat konten HTML untuk print
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Laporan Kesehatan - TensionTrack</title>
+        <style>
+          body {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            margin: 20px;
+            white-space: pre-wrap;
+          }
+          .header {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+          }
+          .section {
+            margin-bottom: 15px;
+          }
+          .section-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+          }
+          .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            border-top: 1px solid #000;
+            padding-top: 10px;
+          }
+          @media print {
+            body { margin: 0; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          LAPORAN KESEHATAN KOMPREHENSIF<br>
+          TensionTrack App
+        </div>
+        <div class="content">
+          ${report.replace(/\n/g, '<br>')}
+        </div>
+        <div class="footer">
+          Dicetak pada: ${format(new Date(), "dd/MM/yyyy HH:mm")}<br>
+          TensionTrack - Aplikasi Manajemen Hipertensi
+        </div>
+        <div class="no-print">
+          <button onclick="window.print()">Print</button>
+          <button onclick="window.close()">Tutup</button>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    // Buka window baru untuk print
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.focus();
+    }
   };
 
   const scheduleUrl = `https://wa.me/${DOCTOR_WHATSAPP_NUMBER}?text=${encodeURIComponent("Halo, saya ingin menjadwalkan sesi konsultasi kesehatan.")}`;
@@ -332,6 +495,10 @@ export default function ConsultationPage() {
                 <Button onClick={shareReportViaWhatsApp}>
                   <MessageCircle className="mr-2 h-4 w-4" />
                   Bagikan ke Ners Counselor via WhatsApp
+                </Button>
+                <Button variant="outline" onClick={printPDF}>
+                  <Printer className="mr-2 h-4 w-4" />
+                  Print PDF
                 </Button>
                 <Button variant="outline" onClick={() => setReport(null)}>
                   Batal
