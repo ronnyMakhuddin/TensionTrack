@@ -171,7 +171,7 @@ export default function ActivityPage() {
           .map(log => `${log.activityType || 'Aktivitas'} - ${log.description} (${log.duration} menit, ${log.timestamp && format(new Date(log.timestamp), "dd/MM")})`)
           .join(", ") || "Belum ada riwayat aktivitas";
 
-        const activityTypesList = [...new Set(activityLogs.map(log => log.activityType).filter(Boolean))];
+        const activityTypesList = [...new Set(activityLogs.map(log => log.activityType).filter((type): type is string => Boolean(type)))];
         const unhealthyHabits = activityTypesList.filter(type => 
           activityTypes.find(a => a.value === type)?.impact === "negative"
         );
