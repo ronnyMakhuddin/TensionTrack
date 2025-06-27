@@ -109,6 +109,12 @@ export default function DashboardPage() {
     if (systolic < 90 || diastolic < 60) return { text: "Rendah", color: "text-blue-500" };
     if (systolic <= 120 && diastolic <= 80) return { text: "Normal", color: "text-green-500" };
     if (systolic >= 120 && systolic <= 129 && diastolic < 80) return { text: "Meningkat", color: "text-yellow-500" };
+    
+    // Kasus khusus: sistolik normal tapi diastolik tinggi
+    if (systolic <= 129 && diastolic >= 80 && diastolic <= 89) return { text: "Tinggi Ringan", color: "text-orange-400" };
+    if (systolic <= 129 && diastolic >= 90) return { text: "Tinggi Sedang", color: "text-orange-500" };
+    
+    // Klasifikasi standar
     if ((systolic >= 130 && systolic <= 139) || (diastolic >= 80 && diastolic <= 89)) return { text: "Tinggi (Tahap 1)", color: "text-orange-500" };
     if (systolic >= 140 || diastolic >= 90) return { text: "Tinggi (Tahap 2)", color: "text-red-500" };
     if (systolic > 180 || diastolic > 120) return { text: "Krisis Hipertensi", color: "text-red-700 font-bold" };
