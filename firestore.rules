@@ -1,0 +1,12 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Izinkan pengguna untuk membaca dan menulis data mereka sendiri.
+    // Aturan ini berlaku untuk dokumen profil pengguna dan semua sub-koleksi
+    // (seperti catatan tekanan darah, makanan, dan aktivitas).
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
